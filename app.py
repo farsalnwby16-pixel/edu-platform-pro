@@ -10,7 +10,7 @@ client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 @app.route('/')
 def index():
-    return "المنصة تعمل بنجاح مع موديل Meta Llama!"
+    return render_template('index.html')
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
