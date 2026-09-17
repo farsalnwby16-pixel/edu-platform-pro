@@ -3,193 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة المذاكرة الجماعية • EduPlatform Pro</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
+    <title>منصة المذاكرة الجماعية (فيديو + سبورة حية)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
-        body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; margin: 0; padding: 10px; color: #f8fafc; text-align: center; }
-        .container { max-width: 950px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
-        .card { background: #1e293b; padding: 12px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); border: 1px solid #334155; }
-        h2 { margin: 5px 0; color: #38bdf8; font-size: 18px; }
-        p.desc { color: #94a3b8; font-size: 13px; margin: 0 0 10px 0; }
-        
-        /* إطار الفيديو جوه الصفحة */
-        .video-container { width: 100%; height: 380px; border-radius: 8px; overflow: hidden; border: 2px solid #22c55e; background: #000; }
-        iframe { width: 100%; height: 100%; border: none; }
-        
-        /* أزرار التحكم في المكالمة */
-        .call-controls { margin-top: 10px; display: flex; justify-content: center; gap: 10px; }
-        .btn-end { background: #ef4444; color: white; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; box-shadow: 0 2px 8px rgba(239,68,68,0.4); }
-        .btn-end:hover { background: #dc2626; }
-
-        /* السبورة التفاعلية تحت الفيديو مباشرة */
-        .toolbar { margin: 8px 0; display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap; }
-        .color-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; display: inline-block; }
-        .color-btn.active { border: 3px solid #facc15; transform: scale(1.15); }
-        button.tool-btn { background: #3b82f6; color: white; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
-        button.tool-btn:hover { background: #2563eb; }
-        canvas { background: white; border-radius: 8px; cursor: crosshair; touch-action: none; width: 100%; max-width: 900px; height: 340px; display: block; margin: 0 auto; }
-        .status { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 6px; }
-        .online { background: #065f46; color: #34d399; }
-        .offline { background: #7f1d1d; color: #fca5a5; }
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+        body { font-family: 'Cairo', sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; }
+        .canvas-container { touch-action: none; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h2>📚 منصة المذاكرة الجماعية (فيديو + سبورة حية)</h2>
-        <p class="desc">تم إظهار أزرار التحكم الكاملة (المايك، الصوت، الكاميرا) داخل إطار الفيديو مباشرة.</p>
+<body class="h-screen w-screen flex flex-col overflow-x-hidden">
 
-        <!-- مكالمة الفيديو الجماعية عبر VDO.ninja (بدون cleanoutput لتظهر الأزرار) -->
-        <div class="card">
-            <h3>🎥 غرفة مكالمة الفيديو الجماعية</h3>
-            <div class="video-container">
-                <iframe id="vdo-iframe" src="https://vdo.ninja/?room=EduPlatformPro_StudyRoom_2026" allow="camera; microphone; fullscreen; display-capture; autoplay;"></iframe>
+    <!-- رأس الصفحة -->
+    <header class="bg-slate-900 border-b border-slate-800 px-4 py-2 flex justify-between items-center shrink-0">
+        <h1 class="font-bold text-sm text-slate-200">📚 منصة المذاكرة الجماعية (فيديو + سبورة متطورة)</h1>
+        <span id="room-status" class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">متصل بالسيرفر</span>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <div class="flex-1 flex flex-col p-2 gap-2 overflow-y-auto">
+
+        <!-- إطار المكالمات (كما هو بدون أي مساس) -->
+        <div class="w-full h-72 md:h-80 bg-slate-950 rounded-xl border border-slate-800 overflow-hidden shrink-0">
+            <iframe src="https://vdo.ninja/?room=EduPlatformPro_StudyRoom_2026" class="w-full h-full border-0" allow="camera;microphone;fullscreen;display-capture"></iframe>
+        </div>
+
+        <!-- قسم السبورة المتطورة -->
+        <div class="flex-1 flex flex-col bg-slate-900 rounded-xl border border-slate-800 p-2 min-h-[450px]">
+            <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-800 text-xs">
+                <span class="font-bold text-slate-300">🎨 السبورة التفاعلية (مع إضافة الجداول ومقاسات الخطوط)</span>
+                
+                <div class="flex flex-wrap items-center gap-2">
+                    <!-- الألوان -->
+                    <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                        <button onclick="setColor('#ef4444')" class="w-5 h-5 rounded-full bg-red-500 hover:scale-110 transition"></button>
+                        <button onclick="setColor('#22c55e')" class="w-5 h-5 rounded-full bg-green-500 hover:scale-110 transition"></button>
+                        <button onclick="setColor('#3b82f6')" class="w-5 h-5 rounded-full bg-blue-500 hover:scale-110 transition"></button>
+                        <button onclick="setColor('#eab308')" class="w-5 h-5 rounded-full bg-yellow-500 hover:scale-110 transition"></button>
+                        <button onclick="setColor('#ffffff')" class="w-5 h-5 rounded-full bg-white hover:scale-110 transition"></button>
+                    </div>
+
+                    <!-- مقاسات الخط (رفيع، متوسط، تخين) -->
+                    <select id="brushSize" class="bg-slate-950 border border-slate-800 text-slate-200 rounded-lg px-2 py-1 text-xs outline-none">
+                        <option value="2">خط رفيع</option>
+                        <option value="5" selected>خط متوسط</option>
+                        <option value="12">خط تخين</option>
+                        <option value="24">خط عريض جداً</option>
+                    </select>
+
+                    <!-- أداة الممحاة -->
+                    <button onclick="enableEraser()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded-lg transition font-medium">🧹 ممحاة</button>
+
+                    <!-- أداة رسم جدول جاهز -->
+                    <button onclick="drawTable()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1 rounded-lg transition font-medium">📊 رسم جدول</button>
+
+                    <!-- مسح الكل -->
+                    <button onclick="clearCanvas(true)" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 px-2.5 py-1 rounded-lg transition font-medium">مسح الكل</button>
+                </div>
             </div>
-            <div class="call-controls">
-                <button class="btn-end" onclick="endCall()">🔴 إنهاء المكالمة / خروج</button>
+
+            <!-- مساحة الرسم -->
+            <div class="flex-1 canvas-container bg-white rounded-lg mt-2 relative overflow-hidden cursor-crosshair">
+                <canvas id="whiteboard" class="w-full h-full block"></canvas>
             </div>
         </div>
 
-        <!-- السبورة التفاعلية -->
-        <div class="card">
-            <h3>🖥️ السبورة التفاعلية الجماعية (متزامنة باللحظة)</h3>
-            <div id="board-status" class="status offline">جاري الاتصال بالسبورة...</div>
-            
-            <div class="toolbar">
-                <span>الألوان:</span>
-                <div class="color-btn active" style="background: #000000;" onclick="setColor('#000000', this)"></div>
-                <div class="color-btn" style="background: #ef4444;" onclick="setColor('#ef4444', this)"></div>
-                <div class="color-btn" style="background: #3b82f6;" onclick="setColor('#3b82f6', this)"></div>
-                <div class="color-btn" style="background: #22c55e;" onclick="setColor('#22c55e', this)"></div>
-                <div class="color-btn" style="background: #eab308;" onclick="setColor('#eab308', this)"></div>
-                <button class="tool-btn" onclick="setEraser()" style="background: #64748b;">🧹 ممحاة</button>
-                <button class="tool-btn" onclick="clearBoard()" style="background: #ef4444;">🗑️ مسح الكل</button>
-            </div>
-
-            <canvas id="paintCanvas" width="900" height="340"></canvas>
-        </div>
     </div>
 
+    <!-- كود الجافاسكريبت المحدث للسبورة والسيرفر -->
     <script>
-        function endCall() {
-            const iframe = document.getElementById('vdo-iframe');
-            iframe.src = iframe.src;
-        }
-
-        const userId = "user_" + Math.floor(Math.random() * 100000);
-        const canvas = document.getElementById('paintCanvas');
-        const ctx = canvas.getContext('2d');
-        const topic = "edu_platform_live_room_2026_v2";
-
-        let drawing = false;
-        let color = "#000000";
-        let lineWidth = 3;
-        let lastX = 0, lastY = 0;
-
-        const client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', { clientId: userId });
+        const mqttTopic = "smart_classroom_room_2026_main";
+        const client = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
 
         client.on('connect', () => {
-            const badge = document.getElementById('board-status');
-            badge.innerText = "السبورة متصلة لايف ✅";
-            badge.className = "status online";
-            client.subscribe(topic);
+            document.getElementById('room-status').innerText = "متصل مباشر ✅";
+            client.subscribe(mqttTopic);
         });
 
-        client.on('offline', () => {
-            const badge = document.getElementById('board-status');
-            badge.innerText = "انقطع الاتصال بالسبورة ❌";
-            badge.className = "status offline";
-        });
-
-        client.on('message', (t, payload) => {
-            if (t !== topic) return;
+        client.on('message', (topic, payload) => {
             try {
                 const data = JSON.parse(payload.toString());
-                if (data.sender === userId) return;
-
                 if (data.type === 'draw') {
-                    drawLine(data.x0 * canvas.width, data.y0 * canvas.height, data.x1 * canvas.width, data.y1 * canvas.height, data.color, data.size);
+                    drawOnCanvas(data.x0, data.y0, data.x1, data.y1, data.color, data.size, false);
+                } else if (data.type === 'table') {
+                    renderTable(data.x, data.y, data.cols, data.rows, data.cellW, data.cellH, false);
                 } else if (data.type === 'clear') {
+                    const canvas = document.getElementById('whiteboard');
+                    const ctx = canvas.getContext('2d');
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                 }
-            } catch (e) {}
+            } catch (e) { console.error(e); }
         });
 
-        function getCoord(e) {
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        let drawing = false, lastX = 0, lastY = 0;
+        let currentColor = '#3b82f6';
+
+        function setColor(color) {
+            currentColor = color;
+        }
+
+        function enableEraser() {
+            currentColor = '#ffffff'; // الممحاة ترسم باللون الابيض
+        }
+
+        // رسم جدول تفاعلي متزامن
+        function drawTable() {
+            const cols = 4;
+            const rows = 5;
+            const cellW = 80;
+            const cellH = 30;
+            const startX = 50;
+            const startY = 50;
+
+            renderTable(startX, startY, cols, rows, cellW, cellH, true);
+        }
+
+        function renderTable(startX, startY, cols, rows, cellW, cellH, broadcast) {
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 2;
+
+            for (let i = 0; i <= rows; i++) {
+                ctx.beginPath();
+                ctx.moveTo(startX, startY + (i * cellH));
+                ctx.lineTo(startX + (cols * cellW), startY + (i * cellH));
+                ctx.stroke();
+            }
+
+            for (let j = 0; j <= cols; j++) {
+                ctx.beginPath();
+                ctx.moveTo(startX + (j * cellW), startY);
+                ctx.lineTo(startX + (j * cellW), startY + (rows * cellH));
+                ctx.stroke();
+            }
+
+            if (broadcast) {
+                client.publish(mqttTopic, JSON.stringify({
+                    type: 'table',
+                    x: startX, y: startY, cols, rows, cellW, cellH
+                }));
+            }
+        }
+
+        canvas.addEventListener('mousedown', (e) => startDraw(e.offsetX, e.offsetY));
+        canvas.addEventListener('mousemove', (e) => draw(e.offsetX, e.offsetY));
+        canvas.addEventListener('mouseup', stopDraw);
+        canvas.addEventListener('mouseleave', stopDraw);
+
+        canvas.addEventListener('touchstart', (e) => {
             const rect = canvas.getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            return {
-                x: (clientX - rect.left) * (canvas.width / rect.width),
-                y: (clientY - rect.top) * (canvas.height / rect.height)
-            };
-        }
-
-        canvas.addEventListener('mousedown', (e) => { drawing = true; const pos = getCoord(e); lastX = pos.x; lastY = pos.y; });
-        canvas.addEventListener('mouseup', () => drawing = false);
-        canvas.addEventListener('mouseleave', () => drawing = false);
-        
-        canvas.addEventListener('mousemove', (e) => {
-            if (!drawing) return;
-            const pos = getCoord(e);
-            drawLine(lastX, lastY, pos.x, pos.y, color, lineWidth);
-            
-            if (client.connected) {
-                client.publish(topic, JSON.stringify({
-                    type: 'draw', sender: userId,
-                    x0: lastX / canvas.width, y0: lastY / canvas.height,
-                    x1: pos.x / canvas.width, y1: pos.y / canvas.height,
-                    color: color, size: lineWidth
-                }));
-            }
-            lastX = pos.x; lastY = pos.y;
-        });
-
-        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); drawing = true; const pos = getCoord(e); lastX = pos.x; lastY = pos.y; });
-        canvas.addEventListener('touchend', (e) => { e.preventDefault(); drawing = false; });
-        canvas.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
+            startDraw(touch.clientX - rect.left, touch.clientY - rect.top);
             e.preventDefault();
-            if (!drawing) return;
-            const pos = getCoord(e);
-            drawLine(lastX, lastY, pos.x, pos.y, color, lineWidth);
-
-            if (client.connected) {
-                client.publish(topic, JSON.stringify({
-                    type: 'draw', sender: userId,
-                    x0: lastX / canvas.width, y0: lastY / canvas.height,
-                    x1: pos.x / canvas.width, y1: pos.y / canvas.height,
-                    color: color, size: lineWidth
-                }));
-            }
-            lastX = pos.x; lastY = pos.y;
         });
+        canvas.addEventListener('touchmove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            draw(touch.clientX - rect.left, touch.clientY - rect.top);
+            e.preventDefault();
+        });
+        canvas.addEventListener('touchend', stopDraw);
 
-        function drawLine(x0, y0, x1, y1, col, size) {
-            ctx.beginPath();
-            ctx.moveTo(x0, y0);
-            ctx.lineTo(x1, y1);
-            ctx.strokeStyle = col;
-            ctx.lineWidth = size;
-            ctx.lineCap = 'round';
-            ctx.stroke();
-            ctx.closePath();
+        function startDraw(x, y) { drawing = true; lastX = x; lastY = y; }
+        function draw(x, y) {
+            if (!drawing) return;
+            const size = document.getElementById('brushSize').value;
+            drawOnCanvas(lastX, lastY, x, y, currentColor, size, true);
+            lastX = x; lastY = y;
         }
+        function stopDraw() { drawing = false; }
 
-        function clearBoard() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (client.connected) {
-                client.publish(topic, JSON.stringify({ type: 'clear', sender: userId }));
+        function drawOnCanvas(x0, y0, x1, y1, color, size, broadcast) {
+            ctx.beginPath();
+            ctx.moveTo(x0, y0); ctx.lineTo(x1, y1);
+            ctx.strokeStyle = color; ctx.lineWidth = size; ctx.lineCap = 'round';
+            ctx.stroke(); ctx.closePath();
+
+            if (broadcast) {
+                client.publish(mqttTopic, JSON.stringify({ type: 'draw', x0, y0, x1, y1, color, size }));
             }
         }
 
-        function setColor(c, el) {
-            color = c; lineWidth = 3;
-            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
-            if (el) el.classList.add('active');
-        }
-
-        function setEraser() {
-            color = "#ffffff"; lineWidth = 20;
-            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+        function clearCanvas(broadcast) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (broadcast) client.publish(mqttTopic, JSON.stringify({ type: 'clear' }));
         }
     </script>
 </body>
