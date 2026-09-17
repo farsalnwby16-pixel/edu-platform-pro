@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EduPlatform Pro • بث مباشر وسبورة حية</title>
-    <script src="https://download.agora.io/sdk/web/AgoraRTC_N-4.20.0.js"></script>
+    <!-- Agora RTC SDK via jsDelivr CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/agora-rtc-sdk-ng@4.22.0/AgoraRTC_N-4.22.0.js"></script>
+    <!-- MQTT SDK for Live Whiteboard Sync -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
     <style>
         body { font-family: sans-serif; text-align: center; background: #f4f6f9; margin: 0; padding: 15px; color: #333; }
@@ -26,6 +28,7 @@
 <body>
     <h2>EduPlatform Pro • بث مباشر وسبورة تفاعلية 100%</h2>
 
+    <!-- قسم الفيديو -->
     <div class="card">
         <h3>🎥 مكالمة الفيديو الجماعية</h3>
         <button id="join-btn" onclick="joinChannel()">الانضمام للمكالمة الجماعية</button>
@@ -34,6 +37,7 @@
         </div>
     </div>
 
+    <!-- قسم السبورة اللايف -->
     <div class="card">
         <h3>🖥️ السبورة التفاعلية الحية</h3>
         <div id="whiteboard-status" class="status-badge offline">جاري الربط بالسبورة اللايف...</div>
@@ -59,6 +63,11 @@
         let rtc = { client: null, localAudioTrack: null, localVideoTrack: null };
 
         async function joinChannel() {
+            if (typeof AgoraRTC === 'undefined') {
+                alert("جاري إكمال تحميل مكتبة الفيديو، يرجى إعادة الضغط بعد ثوانٍ بسيطة!");
+                return;
+            }
+
             const btn = document.getElementById("join-btn");
             btn.disabled = true;
             btn.innerText = "جاري الاتصال...";
@@ -107,11 +116,11 @@
                 console.error("Agora Error:", err);
                 btn.disabled = false;
                 btn.innerText = "الانضمام للمكالمة الجماعية";
-                alert("تعذر فتح الكاميرا/المكالمة: " + (err.message || err));
+                alert("تنبيه: " + (err.message || err));
             }
         }
 
-        // كود السبورة
+        // كود السبورة المتزامنة
         const canvas = document.getElementById('paintCanvas');
         const ctx = canvas.getContext('2d');
         const whiteboardTopic = "eduplatform_pro_room_main_whiteboard_v1";
