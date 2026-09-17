@@ -2,303 +2,90 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EduPlatform Pro - نظام البث التفاعلي المدمج</title>
-    <!-- Bootstrap 5 CSS RTL -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css.rtl.min.css">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Cairo -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- Socket.IO -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduPlatform Pro</title>
+    <script src="https://download.agora.io/sdk/web/AgoraRTC_N-4.20.0.js"></script>
     <style>
-        body { background-color: #f8f9fc; font-family: 'Cairo', sans-serif; color: #333; touch-action: manipulation; }
-        .navbar { background: #ffffff !important; border-bottom: 1px solid #e3e6f0; }
-        .navbar-brand { font-weight: 700; color: #4e73df !important; }
-        .card { border: none; border-radius: 12px; box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.08); margin-bottom: 1.5rem; }
-        .card-header { background: #fff; font-weight: 700; border-bottom: 1px solid #e3e6f0; padding: 1rem 1.25rem; }
-        .chat-box { height: 220px; overflow-y: auto; background: #fdfdfe; border: 1px solid #eaecf4; border-radius: 8px; padding: 12px; }
-        .message { margin-bottom: 10px; padding: 10px 14px; border-radius: 10px; max-width: 85%; font-size: 0.95rem; line-height: 1.4; }
-        .user-msg { background: #4e73df; color: white; margin-left: auto; border-bottom-left-radius: 2px; }
-        .ai-msg { background: #f1f3f9; color: #212529; margin-right: auto; border-bottom-right-radius: 2px; border: 1px solid #e2e8f0; white-space: pre-line; }
-        
-        /* شاشة مكالمة الفيديو المدمجة */
-        .video-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; background: #1a1a24; padding: 10px; border-radius: 8px; }
-        video { width: 140px; height: 105px; object-fit: cover; border-radius: 6px; background: #000; border: 2px solid #4e73df; }
-
-        /* السبورة */
-        #whiteboard {
-            width: 100%;
-            height: 350px;
-            background: #ffffff;
-            border: 2px solid #4e73df;
-            border-radius: 8px;
-            cursor: crosshair;
-            display: block;
-            touch-action: none;
-        }
+        body { font-family: sans-serif; text-align: center; background: #f4f6f9; margin: 0; padding: 20px; }
+        .card { background: white; padding: 15px; margin: 15px auto; max-width: 500px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        #video-container { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+        .video-box { width: 200px; height: 150px; background: #1a1a2e; border-radius: 8px; overflow: hidden; position: relative; }
+        button { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        canvas { border: 2px solid #007bff; border-radius: 8px; background: white; cursor: crosshair; touch-action: none; }
     </style>
 </head>
 <body>
+    <h2>EduPlatform Pro • بث مباشر</h2>
 
-    <nav class="navbar navbar-expand-lg sticky-top shadow-sm">
-        <div class="container">
-            <a class="navbar-brand" href="#"><i class="fas fa-graduation-cap me-2"></i>EduPlatform Pro</a>
-            <span class="badge bg-success bg-opacity-10 text-success px-3 py-2">● السيرفر المباشر متصل</span>
+    <div class="card">
+        <h3>🎥 مكالمة الفيديو الحية (Agora)</h3>
+        <button onclick="joinChannel()">تشغيل الكاميرا والمايك</button>
+        <div id="video-container">
+            <div id="local-player" class="video-box"></div>
+            <div id="remote-player" class="video-box"></div>
         </div>
-    </nav>
-
-    <div class="container my-3">
-
-        <!-- Embedded WebRTC Video Call -->
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span><i class="fas fa-video text-primary me-2"></i>مكالمة الفيديو الحية المدمجة (WebRTC)</span>
-                <button class="btn btn-primary btn-sm px-3" id="startCallBtn" onclick="initCall()"><i class="fas fa-headset me-1"></i> تشغيل الكاميرا والمايك</button>
-            </div>
-            <div class="card-body p-2 text-center">
-                <div class="video-grid" id="videoGrid">
-                    <video id="localVideo" autoplay playsinline muted></video>
-                </div>
-            </div>
-        </div>
-
-        <!-- Live Whiteboard -->
-        <div class="card mt-3">
-            <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-                <span><i class="fas fa-chalkboard text-primary me-2"></i>السبورة التفاعلية المشتركة</span>
-                <div class="btn-group btn-group-sm">
-                    <button class="btn btn-outline-primary active" id="penBtn" onclick="setTool('pen')"><i class="fas fa-pen me-1"></i> رسم</button>
-                    <button class="btn btn-outline-primary" id="eraserBtn" onclick="setTool('eraser')"><i class="fas fa-eraser me-1"></i> مسح</button>
-                    <button class="btn btn-outline-danger" onclick="clearBoard()"><i class="fas fa-trash me-1"></i> تنظيف</button>
-                </div>
-            </div>
-            <div class="card-body text-center bg-light p-2">
-                <canvas id="whiteboard"></canvas>
-            </div>
-        </div>
-
-        <!-- AI Assistant & PDF -->
-        <div class="card mt-3">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span><i class="fas fa-robot text-primary me-2"></i>المساعد الأكاديمي الذكي (PDF)</span>
-            </div>
-            <div class="card-body p-3">
-                <div id="chatBox" class="chat-box mb-3">
-                    <div class="message ai-msg">أهلاً بك يا بروفيسور! ارفع ملف PDF أو اكتب سؤالك الأكاديمي لنبدأ الشرح.</div>
-                </div>
-                <div class="input-group">
-                    <input type="file" id="pdfFile" class="d-none" accept=".pdf" onchange="handleFileSelect(event)">
-                    <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('pdfFile').click()"><i class="fas fa-file-pdf text-danger fa-lg"></i></button>
-                    <input type="text" id="userInput" class="form-control form-control-sm py-2" placeholder="اكتب سؤالك أو ارفع ملف..." onkeypress="checkEnter(event)">
-                    <button class="btn btn-primary px-4" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
-                </div>
-                <div id="fileNameDisplay" class="text-muted small mt-2"></div>
-            </div>
-        </div>
-
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <div class="card">
+        <h3>🖥️ السبورة التفاعلية</h3>
+        <canvas id="paintCanvas" width="300" height="300"></canvas>
+    </div>
+
     <script>
-        const socket = io();
-        let localStream;
-        const peers = {};
+        const appId = "2b0b7c5a99f247de8305750411dd1296";
+        const channel = "main-room";
+        const token = null;
 
-        // --- WebRTC Video Call Logic (Inside Webpage) ---
-        async function initCall() {
-            try {
-                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                document.getElementById('localVideo').srcObject = localStream;
-                document.getElementById('startCallBtn').classList.replace('btn-primary', 'btn-success');
-                document.getElementById('startCallBtn').innerText = '● الكاميرا مفعلة';
-                
-                socket.emit('join_room');
-            } catch (err) {
-                alert('يرجى السماح بصلاحيات الكاميرا والمايكروفون للمتصفح.');
-            }
+        let rtc = { client: null, localAudioTrack: null, localVideoTrack: null };
+
+        async function joinChannel() {
+            rtc.client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+            
+            rtc.client.on("user-published", async (user, mediaType) => {
+                await rtc.client.subscribe(user, mediaType);
+                if (mediaType === "video") {
+                    user.videoTrack.play("remote-player");
+                }
+                if (mediaType === "audio") {
+                    user.audioTrack.play();
+                }
+            });
+
+            await rtc.client.join(appId, channel, token, null);
+            rtc.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+            rtc.localVideoTrack = await AgoraRTC.createCameraVideoTrack();
+            rtc.localVideoTrack.play("local-player");
+            await rtc.client.publish([rtc.localAudioTrack, rtc.localVideoTrack]);
+            alert("تم الانضمام للمكالمة بنجاح!");
         }
 
-        socket.on('user_joined', async (userId) => {
-            const pc = createPeerConnection(userId);
-            localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-            const offer = await pc.createOffer();
-            await pc.setLocalDescription(offer);
-            socket.emit('signal', { to: userId, signal: offer });
-        });
-
-        socket.on('signal', async (data) => {
-            let pc = peers[data.sender];
-            if (!pc) {
-                pc = createPeerConnection(data.sender);
-                if(localStream) localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-            }
-            if (data.signal.type === 'offer') {
-                await pc.setRemoteDescription(new RTCSessionDescription(data.signal));
-                const answer = await pc.createAnswer();
-                await pc.setLocalDescription(answer);
-                socket.emit('signal', { to: data.sender, signal: answer });
-            } else if (data.signal.type === 'answer') {
-                await pc.setRemoteDescription(new RTCSessionDescription(data.signal));
-            } else if (data.signal.candidate) {
-                await pc.addIceCandidate(new RTCIceCandidate(data.signal));
-            }
-        });
-
-        function createPeerConnection(userId) {
-            const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
-            peers[userId] = pc;
-
-            pc.onicecandidate = (event) => {
-                if (event.candidate) {
-                    socket.emit('signal', { to: userId, signal: { candidate: event.candidate } });
-                }
-            };
-
-            pc.ontrack = (event) => {
-                let remoteVideo = document.getElementById(`video_${userId}`);
-                if (!remoteVideo) {
-                    remoteVideo = document.createElement('video');
-                    remoteVideo.id = `video_${userId}`;
-                    remoteVideo.autoplay = true;
-                    remoteVideo.playsinline = true;
-                    document.getElementById('videoGrid').appendChild(remoteVideo);
-                }
-                remoteVideo.srcObject = event.streams[0];
-            };
-
-            return pc;
-        }
-
-        // --- Pure HTML5 Canvas Whiteboard ---
-        const canvas = document.getElementById('whiteboard');
+        // كود بسيط للرسم المحلي
+        const canvas = document.getElementById('paintCanvas');
         const ctx = canvas.getContext('2d');
+        let drawing = false;
 
-        function resizeCanvas() {
+        canvas.addEventListener('mousedown', () => drawing = true);
+        canvas.addEventListener('mouseup', () => drawing = false);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('touchstart', () => drawing = true);
+        canvas.addEventListener('touchend', () => drawing = false);
+        canvas.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
             const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = 350;
-            ctx.fillStyle = "#ffffff";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-        window.addEventListener('load', resizeCanvas);
-        window.addEventListener('resize', resizeCanvas);
-        setTimeout(resizeCanvas, 200);
-
-        let painting = false;
-        let currentTool = 'pen';
-
-        function setTool(tool) {
-            currentTool = tool;
-            if(tool === 'pen') {
-                document.getElementById('penBtn').classList.add('active');
-                document.getElementById('eraserBtn').classList.remove('active');
-            } else {
-                document.getElementById('eraserBtn').classList.add('active');
-                document.getElementById('penBtn').classList.remove('active');
-            }
-        }
-
-        function getMousePos(e) {
-            const rect = canvas.getBoundingClientRect();
-            let clientX = e.clientX, clientY = e.clientY;
-            if (e.touches && e.touches.length > 0) {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
-            }
-            return { x: clientX - rect.left, y: clientY - rect.top };
-        }
-
-        function startPosition(e) { painting = true; draw(e); }
-        function finishedPosition() { painting = false; ctx.beginPath(); }
+            draw({ clientX: touch.clientX - rect.left, clientY: touch.clientY - rect.top });
+        });
 
         function draw(e) {
-            if (!painting) return;
-            e.preventDefault();
-            const pos = getMousePos(e);
-
-            ctx.lineWidth = currentTool === 'eraser' ? 25 : 4;
+            if (!drawing) return;
+            ctx.lineWidth = 3;
             ctx.lineCap = 'round';
-            ctx.strokeStyle = currentTool === 'eraser' ? '#ffffff' : '#4e73df';
-
-            ctx.lineTo(pos.x, pos.y);
+            ctx.strokeStyle = '#007bff';
+            const x = e.clientX || e.clientX === 0 ? e.clientX - canvas.getBoundingClientRect().left : e.clientX;
+            const y = e.clientY || e.clientY === 0 ? e.clientY - canvas.getBoundingClientRect().top : e.clientY;
+            ctx.lineTo(x, y);
             ctx.stroke();
             ctx.beginPath();
-            ctx.moveTo(pos.x, pos.y);
-
-            socket.emit('draw_line', { x: pos.x, y: pos.y, tool: currentTool });
-        }
-
-        canvas.addEventListener('mousedown', startPosition);
-        canvas.addEventListener('mouseup', finishedPosition);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('touchstart', startPosition, { passive: false });
-        canvas.addEventListener('touchend', finishedPosition);
-        canvas.addEventListener('touchmove', draw, { passive: false });
-
-        socket.on('draw_line', (data) => {
-            ctx.lineWidth = data.tool === 'eraser' ? 25 : 4;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = data.tool === 'eraser' ? '#ffffff' : '#4e73df';
-            ctx.lineTo(data.x, data.y);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(data.x, data.y);
-        });
-
-        function clearBoard() {
-            ctx.fillStyle = "#ffffff";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            socket.emit('clear_board');
-        }
-
-        socket.on('clear_board', () => {
-            ctx.fillStyle = "#ffffff";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        });
-
-        // --- AI Assistant & PDF ---
-        let selectedFile = null;
-        function checkEnter(e) { if (e.key === 'Enter') sendMessage(); }
-        function handleFileSelect(e) {
-            selectedFile = e.target.files[0];
-            if (selectedFile) document.getElementById('fileNameDisplay').innerText = `📄 الملف: ${selectedFile.name}`;
-        }
-
-        async function sendMessage() {
-            const input = document.getElementById('userInput');
-            const text = input.value.trim();
-            if (!text && !selectedFile) return;
-
-            appendMessage(text + (selectedFile ? ` [ملف: ${selectedFile.name}]` : ''), 'user-msg');
-            input.value = '';
-            
-            const formData = new FormData();
-            formData.append('text', text);
-            if (selectedFile) {
-                formData.append('file', selectedFile);
-                selectedFile = null;
-                document.getElementById('fileNameDisplay').innerText = '';
-            }
-
-            try {
-                const res = await fetch('/api/ai-assistant', { method: 'POST', body: formData });
-                const data = await res.json();
-                appendMessage(data.reply, 'ai-msg');
-            } catch (err) {
-                appendMessage('⚠️ خطأ في الاتصال بالسيرفر.', 'ai-msg');
-            }
-        }
-
-        function appendMessage(text, className) {
-            const chatBox = document.getElementById('chatBox');
-            const div = document.createElement('div');
-            div.className = `message ${className}`;
-            div.innerText = text;
-            chatBox.appendChild(div);
-            chatBox.scrollTop = chatBox.scrollHeight;
+            ctx.moveTo(x, y);
         }
     </script>
 </body>
