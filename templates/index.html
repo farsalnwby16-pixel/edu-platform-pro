@@ -7,40 +7,41 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
     <style>
         body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; margin: 0; padding: 10px; color: #f8fafc; text-align: center; }
-        .container { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
-        .card { background: #1e293b; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); border: 1px solid #334155; }
-        h2 { margin-bottom: 5px; color: #38bdf8; }
-        p.desc { color: #94a3b8; font-size: 14px; margin-top: 0; }
+        .container { max-width: 950px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
+        .card { background: #1e293b; padding: 12px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); border: 1px solid #334155; }
+        h2 { margin: 5px 0; color: #38bdf8; font-size: 18px; }
+        p.desc { color: #94a3b8; font-size: 13px; margin: 0 0 10px 0; }
         
-        /* زر المكالمة الرئيسي بدون حدود زمنية */
-        .btn-call { background: #22c55e; color: white; padding: 15px 30px; font-size: 18px; font-weight: bold; border-radius: 10px; border: none; cursor: pointer; text-decoration: none; display: inline-block; margin-top: 10px; box-shadow: 0 4px 12px rgba(34,197,94,0.4); }
-        .btn-call:hover { background: #16a34a; }
+        /* إطار الفيديو جوه الصفحة عشان ما يطردكش بره */
+        .video-container { width: 100%; height: 420px; border-radius: 8px; overflow: hidden; border: 2px solid #3b82f6; background: #000; }
+        iframe { width: 100%; height: 100%; border: none; }
 
         /* السبورة التفاعلية */
-        .toolbar { margin: 10px 0; display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .color-btn { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; display: inline-block; }
+        .toolbar { margin: 8px 0; display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .color-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; display: inline-block; }
         .color-btn.active { border: 3px solid #facc15; transform: scale(1.15); }
-        button.tool-btn { background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        button.tool-btn { background: #3b82f6; color: white; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
         button.tool-btn:hover { background: #2563eb; }
-        canvas { background: white; border-radius: 8px; cursor: crosshair; touch-action: none; width: 100%; max-width: 850px; height: 380px; display: block; margin: 0 auto; }
-        .status { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; margin-bottom: 8px; }
+        canvas { background: white; border-radius: 8px; cursor: crosshair; touch-action: none; width: 100%; max-width: 900px; height: 350px; display: block; margin: 0 auto; }
+        .status { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 6px; }
         .online { background: #065f46; color: #34d399; }
         .offline { background: #7f1d1d; color: #fca5a5; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>📚 منصة المذاكرة الجماعية (فيديو بدون حدود + سبورة حية)</h2>
-        <p class="desc">السيستم جاهز 100%. افتحوا الفيديو واقعدوا بالساعات، ومعاكم السبورة تحتها مباشرة.</p>
+        <h2>📚 منصة المذاكرة الجماعية (فيديو + سبورة في شاشة واحدة)</h2>
+        <p class="desc">المكالمة شغالّة فوق، واطلع ونزل براحتك والسبورة معاك تحتها مباشرة.</p>
 
-        <!-- قسم مكالمة الفيديو الجماعية (رابط مباشر بدون قيود الـ 5 دقائق) -->
+        <!-- مكالمة الفيديو داخل الصفحة -->
         <div class="card">
-            <h3>🎥 غرفة مكالمة الفيديو الجماعية (7 أفراد صوت وصورة)</h3>
-            <p style="color: #cbd5e1; font-size: 13px;">اضغط على الزر أدناه لفتح المكالمة في صفحة مستقلة لضمان استمرارها ساعات طويلة بدون انقطاع:</p>
-            <a href="https://meet.jit.si/EduPlatformPro_GroupStudyRoom_2026" target="_blank" class="btn-call">🚀 انضم لمكالمة الفيديو الآن</a>
+            <h3>🎥 غرفة مكالمة الفيديو</h3>
+            <div class="video-container">
+                <iframe src="https://meet.jit.si/EduPlatformPro_GroupStudyRoom_2026#config.disableDeepLinking=true" allow="camera; microphone; display-capture; fullscreen; clipboard-read; clipboard-write"></iframe>
+            </div>
         </div>
 
-        <!-- قسم السبورة التفاعلية -->
+        <!-- السبورة التفاعلية تحت الفيديو مباشرة -->
         <div class="card">
             <h3>🖥️ السبورة التفاعلية الجماعية (متزامنة باللحظة)</h3>
             <div id="board-status" class="status offline">جاري الاتصال بالسبورة...</div>
@@ -56,7 +57,7 @@
                 <button class="tool-btn" onclick="clearBoard()" style="background: #ef4444;">🗑️ مسح الكل</button>
             </div>
 
-            <canvas id="paintCanvas" width="850" height="380"></canvas>
+            <canvas id="paintCanvas" width="900" height="350"></canvas>
         </div>
     </div>
 
