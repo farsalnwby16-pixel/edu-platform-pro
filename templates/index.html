@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EduPlatform Pro • بث مباشر وسبورة حية</title>
-    <!-- Agora RTC SDK via jsDelivr CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/agora-rtc-sdk-ng@4.22.0/AgoraRTC_N-4.22.0.js"></script>
+    <!-- Agora RTC SDK Official CDN -->
+    <script src="https://download.agora.io/sdk/web/AgoraRTC_N.js"></script>
     <!-- MQTT SDK for Live Whiteboard Sync -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
     <style>
@@ -62,17 +62,36 @@
         const token = null;
         let rtc = { client: null, localAudioTrack: null, localVideoTrack: null };
 
-        async function joinChannel() {
-            if (typeof AgoraRTC === 'undefined') {
-                alert("جاري إكمال تحميل مكتبة الفيديو، يرجى إعادة الضغط بعد ثوانٍ بسيطة!");
-                return;
-            }
+        // نظام التحميل الاحتياطي للمكتبات
+        function loadAgoraSDK() {
+            return new Promise((resolve, reject) => {
+                if (typeof AgoraRTC !== 'undefined') return resolve();
+                const urls = [
+                    "https://download.agora.io/sdk/web/AgoraRTC_N.js",
+                    "https://cdn.jsdelivr.net/npm/agora-rtc-sdk-ng@4.22.0/AgoraRTC_N.js",
+                    "https://unpkg.com/agora-rtc-sdk-ng@4.22.0/AgoraRTC_N.js"
+                ];
+                let idx = 0;
+                function tryNext() {
+                    if (idx >= urls.length) return reject("تعذر تحميل مكتبة Agora من جميع المصادر");
+                    const s = document.createElement("script");
+                    s.src = urls[idx++];
+                    s.onload = () => resolve();
+                    s.onerror = () => tryNext();
+                    document.head.appendChild(s);
+                }
+                tryNext();
+            });
+        }
 
+        async function joinChannel() {
             const btn = document.getElementById("join-btn");
             btn.disabled = true;
             btn.innerText = "جاري الاتصال...";
 
             try {
+                await loadAgoraSDK();
+
                 rtc.client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
                 
                 rtc.client.on("user-published", async (user, mediaType) => {
@@ -106,6 +125,7 @@
                 });
 
                 await rtc.client.join(appId, channel, token, null);
+                
                 rtc.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
                 rtc.localVideoTrack = await AgoraRTC.createCameraVideoTrack();
                 rtc.localVideoTrack.play("local-player");
@@ -116,7 +136,12 @@
                 console.error("Agora Error:", err);
                 btn.disabled = false;
                 btn.innerText = "الانضمام للمكالمة الجماعية";
-                alert("تنبيه: " + (err.message || err));
+                let msg = err.message || err;
+                if (msg.includes("PERMISSION_DENIED") || msg.includes("NotAllowedError")) {
+                    alert("⚠️ تم حظر الكاميرا أو المايك! يرجى الضغط على القفل 🔒 أعلى شريط العنوان وتفعيل السماح بالكاميرا والمايك.");
+                } else {
+                    alert("تنبيه المكالمة: " + msg);
+                }
             }
         }
 
