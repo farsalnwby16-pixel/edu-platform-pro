@@ -7,61 +7,97 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
     <style>
         body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; margin: 0; padding: 10px; color: #f8fafc; text-align: center; }
-        .container { max-width: 950px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
-        .card { background: #1e293b; padding: 12px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); border: 1px solid #334155; }
+        .container { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
+        .header-card { background: #1e293b; padding: 15px; border-radius: 12px; border: 1px solid #334155; }
         h2 { margin: 5px 0; color: #38bdf8; font-size: 18px; }
-        p.desc { color: #94a3b8; font-size: 13px; margin: 0 0 10px 0; }
+        p.desc { color: #94a3b8; font-size: 13px; margin: 5px 0 15px 0; }
         
-        /* إطار الفيديو جوه الصفحة عشان ما يطردكش بره */
-        .video-container { width: 100%; height: 420px; border-radius: 8px; overflow: hidden; border: 2px solid #3b82f6; background: #000; }
-        iframe { width: 100%; height: 100%; border: none; }
+        /* أزرار التبديل بين التبويبات */
+        .tabs { display: flex; gap: 10px; justify-content: center; margin-bottom: 5px; }
+        .tab-btn { background: #334155; color: #cbd5e1; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; flex: 1; max-width: 200px; transition: 0.2s; }
+        .tab-btn.active { background: #3b82f6; color: white; box-shadow: 0 4px 12px rgba(59,130,246,0.4); }
 
-        /* السبورة التفاعلية */
-        .toolbar { margin: 8px 0; display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap; }
-        .color-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; display: inline-block; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .card { background: #1e293b; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); border: 1px solid #334155; text-align: center; }
+        
+        /* زر المكالمة */
+        .btn-call { background: #22c55e; color: white; padding: 15px 30px; font-size: 18px; font-weight: bold; border-radius: 10px; border: none; cursor: pointer; text-decoration: none; display: inline-block; margin: 15px 0; box-shadow: 0 4px 12px rgba(34,197,94,0.4); }
+        .btn-call:hover { background: #16a34a; }
+
+        /* السبورة */
+        .toolbar { margin: 10px 0; display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .color-btn { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; display: inline-block; }
         .color-btn.active { border: 3px solid #facc15; transform: scale(1.15); }
-        button.tool-btn { background: #3b82f6; color: white; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
+        button.tool-btn { background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; }
         button.tool-btn:hover { background: #2563eb; }
-        canvas { background: white; border-radius: 8px; cursor: crosshair; touch-action: none; width: 100%; max-width: 900px; height: 350px; display: block; margin: 0 auto; }
-        .status { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 6px; }
+        canvas { background: white; border-radius: 8px; cursor: crosshair; touch-action: none; width: 100%; max-width: 850px; height: 400px; display: block; margin: 0 auto; }
+        .status { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; margin-bottom: 8px; }
         .online { background: #065f46; color: #34d399; }
         .offline { background: #7f1d1d; color: #fca5a5; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>📚 منصة المذاكرة الجماعية (فيديو + سبورة في شاشة واحدة)</h2>
-        <p class="desc">المكالمة شغالّة فوق، واطلع ونزل براحتك والسبورة معاك تحتها مباشرة.</p>
-
-        <!-- مكالمة الفيديو داخل الصفحة -->
-        <div class="card">
-            <h3>🎥 غرفة مكالمة الفيديو</h3>
-            <div class="video-container">
-                <iframe src="https://meet.jit.si/EduPlatformPro_GroupStudyRoom_2026#config.disableDeepLinking=true" allow="camera; microphone; display-capture; fullscreen; clipboard-read; clipboard-write"></iframe>
+        <div class="header-card">
+            <h2>📚 منصة المذاكرة الجماعية • EduPlatform Pro</h2>
+            <p class="desc">انتقل بسهولة تامة بضغطة زر بين مكالمة الفيديو (بدون حدود 5 دقائق) وبين السبورة الحية.</p>
+            
+            <!-- أزرار التبديل -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('video', this)">🎥 مكالمة الفيديو</button>
+                <button class="tab-btn" onclick="switchTab('board', this)">🖥️ السبورة الحية</button>
             </div>
         </div>
 
-        <!-- السبورة التفاعلية تحت الفيديو مباشرة -->
-        <div class="card">
-            <h3>🖥️ السبورة التفاعلية الجماعية (متزامنة باللحظة)</h3>
-            <div id="board-status" class="status offline">جاري الاتصال بالسبورة...</div>
-            
-            <div class="toolbar">
-                <span>الألوان:</span>
-                <div class="color-btn active" style="background: #000000;" onclick="setColor('#000000', this)"></div>
-                <div class="color-btn" style="background: #ef4444;" onclick="setColor('#ef4444', this)"></div>
-                <div class="color-btn" style="background: #3b82f6;" onclick="setColor('#3b82f6', this)"></div>
-                <div class="color-btn" style="background: #22c55e;" onclick="setColor('#22c55e', this)"></div>
-                <div class="color-btn" style="background: #eab308;" onclick="setColor('#eab308', this)"></div>
-                <button class="tool-btn" onclick="setEraser()" style="background: #64748b;">🧹 ممحاة</button>
-                <button class="tool-btn" onclick="clearBoard()" style="background: #ef4444;">🗑️ مسح الكل</button>
+        <!-- تبويب الفيديو -->
+        <div id="video-tab" class="tab-content active">
+            <div class="card">
+                <h3>🎥 غرفة مكالمة الفيديو الجماعية (صوت وصورة)</h3>
+                <p style="color: #cbd5e1; font-size: 14px; line-height: 1.6; max-width: 600px; margin: 0 auto 15px auto;">
+                    اضغط على الزر أدناه لفتح المكالمة في صفحة مستقلة. هذا يضمن عمل المكالمة <b>لعدد ساعات غير محدود بدون أي انقطاع أو رسائل قطع (تخطي مشكلة الـ 5 دقائق نهائياً)</b>.<br>
+                    يمكنك التنقل بين المكالمة والسبورة في أي وقت من خلال أزرار المنصة بالأعلى!
+                </p>
+                <a href="https://meet.jit.si/EduPlatformPro_GroupStudyRoom_2026" target="_blank" class="btn-call">🚀 انضم لمكالمة الفيديو الآن</a>
             </div>
+        </div>
 
-            <canvas id="paintCanvas" width="900" height="350"></canvas>
+        <!-- تبويب السبورة -->
+        <div id="board-tab" class="tab-content">
+            <div class="card">
+                <h3>🖥️ السبورة التفاعلية الجماعية (متزامنة باللحظة)</h3>
+                <div id="board-status" class="status offline">جاري الاتصال بالسبورة...</div>
+                
+                <div class="toolbar">
+                    <span>الألوان:</span>
+                    <div class="color-btn active" style="background: #000000;" onclick="setColor('#000000', this)"></div>
+                    <div class="color-btn" style="background: #ef4444;" onclick="setColor('#ef4444', this)"></div>
+                    <div class="color-btn" style="background: #3b82f6;" onclick="setColor('#3b82f6', this)"></div>
+                    <div class="color-btn" style="background: #22c55e;" onclick="setColor('#22c55e', this)"></div>
+                    <div class="color-btn" style="background: #eab308;" onclick="setColor('#eab308', this)"></div>
+                    <button class="tool-btn" onclick="setEraser()" style="background: #64748b;">🧹 ممحاة</button>
+                    <button class="tool-btn" onclick="clearBoard()" style="background: #ef4444;">🗑️ مسح الكل</button>
+                </div>
+
+                <canvas id="paintCanvas" width="850" height="400"></canvas>
+            </div>
         </div>
     </div>
 
     <script>
+        function switchTab(tabName, btn) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            if (tabName === 'video') {
+                document.getElementById('video-tab').classList.add('active');
+            } else {
+                document.getElementById('board-tab').classList.add('active');
+            }
+            btn.classList.add('active');
+        }
+
         const userId = "user_" + Math.floor(Math.random() * 100000);
         const canvas = document.getElementById('paintCanvas');
         const ctx = canvas.getContext('2d');
