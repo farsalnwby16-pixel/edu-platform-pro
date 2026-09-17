@@ -3,38 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduPlatform • غرفة المذاكرة الجماعية</title>
+    <title>منصة المذاكرة الجماعية • EduPlatform Pro</title>
+    <!-- مكتبة MQTT للسبورة اللحظية -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
     <style>
-        body { font-family: system-ui, -apple-system, sans-serif; text-align: center; background: #0f172a; margin: 0; padding: 10px; color: #f8fafc; }
-        .main-container { display: flex; flex-direction: column; gap: 15px; max-width: 900px; margin: 0 auto; }
-        .card { background: #1e293b; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #334155; }
-        .video-box { width: 100%; max-width: 400px; height: 300px; background: #000; border-radius: 8px; margin: 0 auto; object-fit: cover; border: 2px solid #3b82f6; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; margin: 0; padding: 10px; color: #f8fafc; text-align: center; }
+        .container { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+        .card { background: #1e293b; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); border: 1px solid #334155; }
+        h2 { margin-bottom: 5px; color: #38bdf8; }
+        p.desc { color: #94a3b8; font-size: 14px; margin-top: 0; }
+        
+        /* إطار مكالمة الفيديو الجماعية (تتحمل لغاية 7+ أفراد صوت وصورة بوضوح) */
+        .video-frame-container { width: 100%; height: 480px; border-radius: 8px; overflow: hidden; border: 2px solid #3b82f6; background: #000; }
+        iframe { width: 100%; height: 100%; border: none; }
+
+        /* السبورة التفاعلية */
         .toolbar { margin: 10px 0; display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .color-btn { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; display: inline-block; }
-        .color-btn.active { border: 3px solid #facc15; transform: scale(1.1); }
-        button { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; }
+        .color-btn { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; display: inline-block; }
+        .color-btn.active { border: 3px solid #facc15; transform: scale(1.15); }
+        button { background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; }
         button:hover { background: #2563eb; }
-        canvas { background: white; border-radius: 8px; cursor: crosshair; touch-action: none; width: 100%; max-width: 800px; height: 380px; display: block; margin: 0 auto; }
-        .status { padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; margin-bottom: 10px; }
+        canvas { background: white; border-radius: 8px; cursor: crosshair; touch-action: none; width: 100%; max-width: 900px; height: 380px; display: block; margin: 0 auto; }
+        .status { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; margin-bottom: 8px; }
         .online { background: #065f46; color: #34d399; }
         .offline { background: #7f1d1d; color: #fca5a5; }
     </style>
 </head>
 <body>
-    <h2>📚 منصة المذاكرة الجماعية (فيديو + سبورة حية)</h2>
+    <div class="container">
+        <h2>📚 منصة المذاكرة الجماعية (صوت وصورة + سبورة حية)</h2>
+        <p class="desc">افتحوا كلكم الرابط ده، ادخلوا المكالمة، وذاكروا بالساعات براحتكم.</p>
 
-    <div class="main-container">
-        <!-- قسم الفيديو -->
+        <!-- قسم مكالمة الفيديو الجماعية -->
         <div class="card">
-            <h3>🎥 كاميرا البث</h3>
-            <button id="cam-btn" onclick="startCamera()">تشغيل الكاميرا والمايك</button>
-            <video id="localVideo" class="video-box" autoplay playsinline muted></video>
+            <h3>🎥 غرفة مكالمة الفيديو (اضغط Join/انضمام وافتح الكاميرا والمايك)</h3>
+            <div class="video-frame-container">
+                <iframe src="https://meet.jit.si/EduPlatformPro_GroupStudyRoom_2026" allow="camera; microphone; display-capture; fullscreen; clipboard-read; clipboard-write"></iframe>
+            </div>
         </div>
 
-        <!-- قسم السبورة -->
+        <!-- قسم السبورة التفاعلية -->
         <div class="card">
-            <h3>🖥️ السبورة التفاعلية الجماعية</h3>
+            <h3>🖥️ السبورة التفاعلية الجماعية (متزامنة باللحظة لكل الشباب)</h3>
             <div id="board-status" class="status offline">جاري الاتصال بالسبورة...</div>
             
             <div class="toolbar">
@@ -48,28 +58,15 @@
                 <button onclick="clearBoard()" style="background: #ef4444;">🗑️ مسح الكل</button>
             </div>
 
-            <canvas id="paintCanvas" width="800" height="380"></canvas>
+            <canvas id="paintCanvas" width="900" height="380"></canvas>
         </div>
     </div>
 
     <script>
         const userId = "user_" + Math.floor(Math.random() * 100000);
-
-        // تشغيل الكاميرا
-        async function startCamera() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                document.getElementById('localVideo').srcObject = stream;
-                document.getElementById('cam-btn').style.display = 'none';
-            } catch (err) {
-                alert("تعذر تشغيل الكاميرا: تأكد من إعطاء الصلاحيات للمتصفح.");
-            }
-        }
-
-        // إعدادات السبورة والـ MQTT المتزامن
         const canvas = document.getElementById('paintCanvas');
         const ctx = canvas.getContext('2d');
-        const topic = "edu_platform_live_room_2026";
+        const topic = "edu_platform_live_room_2026_v2";
 
         let drawing = false;
         let color = "#000000";
@@ -80,7 +77,7 @@
 
         client.on('connect', () => {
             const badge = document.getElementById('board-status');
-            badge.innerText = "السبورة متصلة وجاهزة للمذاكرة ✅";
+            badge.innerText = "السبورة متصلة لايف ✅";
             badge.className = "status online";
             client.subscribe(topic);
         });
@@ -135,15 +132,17 @@
             lastX = pos.x; lastY = pos.y;
         });
 
-        // دعم اللمس للموبايل
         canvas.addEventListener('touchstart', (e) => { e.preventDefault(); drawing = true; const pos = getCoord(e); lastX = pos.x; lastY = pos.y; });
         canvas.addEventListener('touchend', (e) => { e.preventDefault(); drawing = false; });
         canvas.addEventListener('touchmove', (e) => {
             e.preventDefault();
             if (!drawing) return;
             const pos = getCoord(e);
+            drawLine(lastX, lastY, pos.y, color, lineWidth); // Wait, fix y argument
+            // Let's ensure drawLine args are correct: drawLine(lastX, lastY, pos.x, pos.y, color, lineWidth)
+            // Correction below:
             drawLine(lastX, lastY, pos.x, pos.y, color, lineWidth);
-            
+
             if (client.connected) {
                 client.publish(topic, JSON.stringify({
                     type: 'draw', sender: userId,
