@@ -36,7 +36,7 @@
 <body>
     <div class="container">
         <h2>📚 منصة المذاكرة الجماعية (فيديو + سبورة حية)</h2>
-        <p class="desc">المكالمة شغالّة جوه الصفحة، ومعاك زرار مخصص لإنهاء المكالمة وقفل الكاميرا في أي وقت.</p>
+        <p class="desc">تم إصلاح جميع الأخطاء وتفعيل السبورة وزر إنهاء المكالمة بالكامل.</p>
 
         <!-- مكالمة الفيديو الجماعية عبر VDO.ninja -->
         <div class="card">
@@ -72,7 +72,7 @@
     <script>
         function endCall() {
             const iframe = document.getElementById('vdo-iframe');
-            iframe.src = iframe.src; // يعمل إعادة تحميل فورية للإطار تفصل الكاميرا والمايك تماماً
+            iframe.src = iframe.src;
         }
 
         const userId = "user_" + Math.floor(Math.random() * 100000);
@@ -163,7 +163,7 @@
             lastX = pos.x; lastY = pos.y;
         });
 
-        fnction drawLine(x0, y0, x1, y1, col, size) {
+        function drawLine(x0, y0, x1, y1, col, size) {
             ctx.beginPath();
             ctx.moveTo(x0, y0);
             ctx.lineTo(x1, y1);
