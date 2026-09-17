@@ -3,198 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduPlatform Pro • بث مباشر وسبورة حية</title>
-    
-    <!-- استخدام سيرفرات jsdelivr السريعة بدلاً من unpkg لضمان سرعة التحميل وعدم الحظر -->
-    <script src="https://cdn.jsdelivr.net/npm/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
+    <title>EduPlatform • غرفة المذاكرة الجماعية</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
-    
     <style>
-        body { font-family: system-ui, -apple-system, sans-serif; text-align: center; background: #f4f6f9; margin: 0; padding: 15px; color: #333; }
-        .card { background: white; padding: 15px; margin: 15px auto; max-width: 850px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        #zego-container { width: 100%; height: 500px; border-radius: 8px; overflow: hidden; margin-top: 10px; background: #1a1a2e; }
+        body { font-family: system-ui, -apple-system, sans-serif; text-align: center; background: #0f172a; margin: 0; padding: 10px; color: #f8fafc; }
+        .main-container { display: flex; flex-direction: column; gap: 15px; max-width: 900px; margin: 0 auto; }
+        .card { background: #1e293b; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #334155; }
+        .video-box { width: 100%; max-width: 400px; height: 300px; background: #000; border-radius: 8px; margin: 0 auto; object-fit: cover; border: 2px solid #3b82f6; }
         .toolbar { margin: 10px 0; display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .color-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #ccc; cursor: pointer; display: inline-block; transition: transform 0.1s; }
-        .color-btn.active { border: 3px solid #000; transform: scale(1.2); }
-        button { background: #007bff; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; margin: 5px; }
-        canvas { border: 2px solid #007bff; border-radius: 8px; background: white; cursor: crosshair; touch-action: none; width: 100%; max-width: 700px; height: 350px; }
-        .status-badge { display: inline-block; padding: 5px 12px; border-radius: 12px; font-size: 13px; font-weight: bold; margin-bottom: 10px; }
-        .online { background: #e6f4ea; color: #137333; }
-        .offline { background: #fce8e6; color: #c5221f; }
-        #start-call-btn { font-size: 18px; padding: 12px 25px; background: #28a745; color: white; border-radius: 8px; margin-bottom: 10px; width: 100%; max-width: 300px; }
+        .color-btn { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; display: inline-block; }
+        .color-btn.active { border: 3px solid #facc15; transform: scale(1.1); }
+        button { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; }
+        button:hover { background: #2563eb; }
+        canvas { background: white; border-radius: 8px; cursor: crosshair; touch-action: none; width: 100%; max-width: 800px; height: 380px; display: block; margin: 0 auto; }
+        .status { padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; margin-bottom: 10px; }
+        .online { background: #065f46; color: #34d399; }
+        .offline { background: #7f1d1d; color: #fca5a5; }
     </style>
 </head>
 <body>
-    <h2>EduPlatform Pro • بث مباشر وسبورة تفاعلية 100%</h2>
+    <h2>📚 منصة المذاكرة الجماعية (فيديو + سبورة حية)</h2>
 
-    <div class="card">
-        <h3>🎥 مكالمة الفيديو الجماعية</h3>
-        <button id="start-call-btn" onclick="initZego()">📞 دخول المكالمة الجماعية</button>
-        <div id="zego-container"></div>
-    </div>
-
-    <div class="card">
-        <h3>🖥️ السبورة التفاعلية الحية</h3>
-        <div id="whiteboard-status" class="status-badge offline">جاري الربط بالسبورة اللايف...</div>
-        
-        <div class="toolbar">
-            <span>الألوان:</span>
-            <div class="color-btn active" style="background: #000000;" onclick="setColor('#000000', this)"></div>
-            <div class="color-btn" style="background: #d93025;" onclick="setColor('#d93025', this)"></div>
-            <div class="color-btn" style="background: #1a73e8;" onclick="setColor('#1a73e8', this)"></div>
-            <div class="color-btn" style="background: #1e8e3e;" onclick="setColor('#1e8e3e', this)"></div>
-            <div class="color-btn" style="background: #f9ab00;" onclick="setColor('#f9ab00', this)"></div>
-            <button onclick="setEraser()" style="background: #6c757d;">🧹 ممحاة</button>
-            <button onclick="sendClearBoard()" style="background: #dc3545;">🗑️ مسح الكل</button>
+    <div class="main-container">
+        <!-- قسم الفيديو -->
+        <div class="card">
+            <h3>🎥 كاميرا البث</h3>
+            <button id="cam-btn" onclick="startCamera()">تشغيل الكاميرا والمايك</button>
+            <video id="localVideo" class="video-box" autoplay playsinline muted></video>
         </div>
 
-        <canvas id="paintCanvas" width="700" height="350"></canvas>
+        <!-- قسم السبورة -->
+        <div class="card">
+            <h3>🖥️ السبورة التفاعلية الجماعية</h3>
+            <div id="board-status" class="status offline">جاري الاتصال بالسبورة...</div>
+            
+            <div class="toolbar">
+                <span>الألوان:</span>
+                <div class="color-btn active" style="background: #000000;" onclick="setColor('#000000', this)"></div>
+                <div class="color-btn" style="background: #ef4444;" onclick="setColor('#ef4444', this)"></div>
+                <div class="color-btn" style="background: #3b82f6;" onclick="setColor('#3b82f6', this)"></div>
+                <div class="color-btn" style="background: #22c55e;" onclick="setColor('#22c55e', this)"></div>
+                <div class="color-btn" style="background: #eab308;" onclick="setColor('#eab308', this)"></div>
+                <button onclick="setEraser()" style="background: #64748b;">🧹 ممحاة</button>
+                <button onclick="clearBoard()" style="background: #ef4444;">🗑️ مسح الكل</button>
+            </div>
+
+            <canvas id="paintCanvas" width="800" height="380"></canvas>
+        </div>
     </div>
 
     <script>
-        const appID = 1294634819;
-        const serverSecret = "96f9f8b7db11e60a5ee0565700b609e8";
-        const roomID = "edu_main_room";
-        const userID = "user_" + Math.floor(Math.random() * 10000);
-        const userName = "مستخدم " + Math.floor(Math.random() * 100);
+        const userId = "user_" + Math.floor(Math.random() * 100000);
 
-        function initZego() {
-            const btn = document.getElementById("start-call-btn");
-            
-            // 🚀 فحص ذكي: لو المكتبة لسه محملتش، نطلب من المستخدم ينتظر ثواني
-            if (typeof ZegoUIKitPrebuilt === 'undefined') {
-                alert("⏳ جاري تجهيز غرفة البث، يرجى الانتظار ثواني قليلة ثم المحاولة مرة أخرى.");
-                return;
-            }
-
-            btn.style.display = "none";
-
+        // تشغيل الكاميرا
+        async function startCamera() {
             try {
-                const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userID, userName);
-                const zp = ZegoUIKitPrebuilt.create(kitToken);
-                zp.joinRoom({
-                    container: document.getElementById("zego-container"),
-                    scenario: {
-                        mode: ZegoUIKitPrebuilt.GroupCall,
-                    },
-                    showPrejoinView: true,
-                    prejoinViewConfig: {
-                        title: "إعدادات الانضمام للمكالمة"
-                    },
-                    showMyCameraToggleButton: true,
-                    showMyMicrophoneToggleButton: true,
-                    showAudioVideoSettingsButton: true,
-                    showUserList: true,
-                    maxUsers: 50,
-                    layout: "Auto"
-                });
-            } catch (e) {
-                alert("حدث خطأ أثناء الاتصال: " + e.message);
-                btn.style.display = "inline-block";
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                document.getElementById('localVideo').srcObject = stream;
+                document.getElementById('cam-btn').style.display = 'none';
+            } catch (err) {
+                alert("تعذر تشغيل الكاميرا: تأكد من إعطاء الصلاحيات للمتصفح.");
             }
         }
 
-        // --- Whiteboard MQTT Setup ---
+        // إعدادات السبورة والـ MQTT المتزامن
         const canvas = document.getElementById('paintCanvas');
         const ctx = canvas.getContext('2d');
-        const whiteboardTopic = "eduplatform_pro_room_main_whiteboard_v1";
+        const topic = "edu_platform_live_room_2026";
 
         let drawing = false;
-        let currentColor = "#000000";
-        let currentLineWidth = 3;
-        let lastPos = { x: 0, y: 0 };
-        const myClientId = userID;
+        let color = "#000000";
+        let lineWidth = 3;
+        let lastX = 0, lastY = 0;
 
-        const mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt', { clientId: myClientId });
+        const client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', { clientId: userId });
 
-        mqttClient.on('connect', () => {
-            const statusBadge = document.getElementById('whiteboard-status');
-            statusBadge.innerText = "السبورة متصلة لايف ✅ (متزامنة للجميع)";
-            statusBadge.className = "status-badge online";
-            mqttClient.subscribe(whiteboardTopic);
+        client.on('connect', () => {
+            const badge = document.getElementById('board-status');
+            badge.innerText = "السبورة متصلة وجاهزة للمذاكرة ✅";
+            badge.className = "status online";
+            client.subscribe(topic);
         });
 
-        mqttClient.on('offline', () => {
-            const statusBadge = document.getElementById('whiteboard-status');
-            statusBadge.innerText = "السبورة غير متصلة ❌";
-            statusBadge.className = "status-badge offline";
+        client.on('offline', () => {
+            const badge = document.getElementById('board-status');
+            badge.innerText = "انقطع الاتصال بالسبورة ❌";
+            badge.className = "status offline";
         });
 
-        mqttClient.on('message', (topic, message) => {
-            if (topic !== whiteboardTopic) return;
+        client.on('message', (t, payload) => {
+            if (t !== topic) return;
             try {
-                const data = JSON.parse(message.toString());
-                if (data.sender === myClientId) return;
+                const data = JSON.parse(payload.toString());
+                if (data.sender === userId) return;
 
                 if (data.type === 'draw') {
-                    drawRemoteLine(data.x0 * canvas.width, data.y0 * canvas.height, data.x1 * canvas.width, data.y1 * canvas.height, data.color, data.size);
+                    drawLine(data.x0 * canvas.width, data.y0 * canvas.height, data.x1 * canvas.width, data.y1 * canvas.height, data.color, data.size);
                 } else if (data.type === 'clear') {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                 }
             } catch (e) {}
         });
 
-        function getPos(e) {
+        function getCoord(e) {
             const rect = canvas.getBoundingClientRect();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+            return {
+                x: (clientX - rect.left) * (canvas.width / rect.width),
+                y: (clientY - rect.top) * (canvas.height / rect.height)
+            };
         }
 
-        function startDrawing(e) { e.preventDefault(); drawing = true; lastPos = getPos(e); }
-        function stopDrawing(e) { if (e) e.preventDefault(); drawing = false; }
-        function draw(e) {
+        canvas.addEventListener('mousedown', (e) => { drawing = true; const pos = getCoord(e); lastX = pos.x; lastY = pos.y; });
+        canvas.addEventListener('mouseup', () => drawing = false);
+        canvas.addEventListener('mouseleave', () => drawing = false);
+        
+        canvas.addEventListener('mousemove', (e) => {
             if (!drawing) return;
-            e.preventDefault();
-            const currentPos = getPos(e);
-            drawLocalLine(lastPos.x, lastPos.y, currentPos.x, currentPos.y, currentColor, currentLineWidth);
-
-            if (mqttClient.connected) {
-                mqttClient.publish(whiteboardTopic, JSON.stringify({
-                    type: 'draw', sender: myClientId,
-                    x0: lastPos.x / canvas.width, y0: lastPos.y / canvas.height,
-                    x1: currentPos.x / canvas.width, y1: currentPos.y / canvas.height,
-                    color: currentColor, size: currentLineWidth
+            const pos = getCoord(e);
+            drawLine(lastX, lastY, pos.x, pos.y, color, lineWidth);
+            
+            if (client.connected) {
+                client.publish(topic, JSON.stringify({
+                    type: 'draw', sender: userId,
+                    x0: lastX / canvas.width, y0: lastY / canvas.height,
+                    x1: pos.x / canvas.width, y1: pos.y / canvas.height,
+                    color: color, size: lineWidth
                 }));
             }
-            lastPos = currentPos;
+            lastX = pos.x; lastY = pos.y;
+        });
+
+        // دعم اللمس للموبايل
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); drawing = true; const pos = getCoord(e); lastX = pos.x; lastY = pos.y; });
+        canvas.addEventListener('touchend', (e) => { e.preventDefault(); drawing = false; });
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!drawing) return;
+            const pos = getCoord(e);
+            drawLine(lastX, lastY, pos.x, pos.y, color, lineWidth);
+            
+            if (client.connected) {
+                client.publish(topic, JSON.stringify({
+                    type: 'draw', sender: userId,
+                    x0: lastX / canvas.width, y0: lastY / canvas.height,
+                    x1: pos.x / canvas.width, y1: pos.y / canvas.height,
+                    color: color, size: lineWidth
+                }));
+            }
+            lastX = pos.x; lastY = pos.y;
+        });
+
+        function drawLine(x0, y0, x1, y1, col, size) {
+            ctx.beginPath();
+            ctx.moveTo(x0, y0);
+            ctx.lineTo(x1, y1);
+            ctx.strokeStyle = col;
+            ctx.lineWidth = size;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+            ctx.closePath();
         }
 
-        function drawLocalLine(x0, y0, x1, y1, color, size) {
-            ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1);
-            ctx.strokeStyle = color; ctx.lineWidth = size; ctx.lineCap = 'round';
-            ctx.stroke(); ctx.closePath();
-        }
-        function drawRemoteLine(x0, y0, x1, y1, color, size) { drawLocalLine(x0, y0, x1, y1, color, size); }
-
-        function sendClearBoard() {
+        function clearBoard() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (mqttClient.connected) {
-                mqttClient.publish(whiteboardTopic, JSON.stringify({ type: 'clear', sender: myClientId }));
+            if (client.connected) {
+                client.publish(topic, JSON.stringify({ type: 'clear', sender: userId }));
             }
         }
 
-        function setColor(color, element) {
-            currentColor = color; currentLineWidth = 3;
-            document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('active'));
-            if(element) element.classList.add('active');
+        function setColor(c, el) {
+            color = c; lineWidth = 3;
+            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+            if (el) el.classList.add('active');
         }
 
         function setEraser() {
-            currentColor = "#ffffff"; currentLineWidth = 20;
-            document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('active'));
+            color = "#ffffff"; lineWidth = 20;
+            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
         }
-
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseleave', stopDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('touchstart', startDrawing);
-        canvas.addEventListener('touchend', stopDrawing);
-        canvas.addEventListener('touchcancel', stopDrawing);
-        canvas.addEventListener('touchmove', draw);
     </script>
 </body>
 </html>
