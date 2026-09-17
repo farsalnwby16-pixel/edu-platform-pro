@@ -32,7 +32,7 @@
         .online { background: #065f46; color: #34d399; }
         .offline { background: #7f1d1d; color: #fca5a5; }
 
-        /* زرار اللوحة الجانبية العائم */
+        /* زرار القائمة الجانبية العائم */
         .floating-sidebar-btn {
             position: fixed;
             top: 20px;
@@ -53,15 +53,15 @@
         }
         .floating-sidebar-btn:hover { background: #0ea5e9; color: white; }
 
-        /* تصميم اللوحة الجانبية المخفية */
+        /* تصميم القائمة الجانبية (الشاشة الكاملة من جنب) */
         .side-panel {
             position: fixed;
             top: 0;
-            right: -380px;
-            width: 360px;
+            right: -400px;
+            width: 380px;
             height: 100%;
-            background: #1e293b;
-            box-shadow: -5px 0 25px rgba(0,0,0,0.5);
+            background: #0f172a;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.6);
             transition: right 0.3s ease-in-out;
             z-index: 1001;
             display: flex;
@@ -72,62 +72,81 @@
             padding: 15px;
         }
         .side-panel.open { right: 0; }
-        .panel-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 10px; }
+        
+        .panel-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 12px; }
         .panel-header h3 { margin: 0; color: #38bdf8; font-size: 16px; }
-        .close-panel-btn { background: #ef4444; color: white; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; }
-        
-        /* أقسام اللوحة الجانبية */
-        .panel-section { margin-bottom: 15px; background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid #334155; }
-        .panel-section h4 { margin: 0 0 8px 0; color: #facc15; font-size: 13px; }
-        
-        /* شات نصي داخل اللوحة */
-        .chat-messages { height: 130px; overflow-y: auto; background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 6px; margin-bottom: 6px; display: flex; flex-direction: column; gap: 4px; text-align: right; font-size: 12px; }
-        .chat-msg { padding: 4px 8px; border-radius: 6px; max-width: 85%; word-break: break-word; }
-        .chat-msg.me { background: #0369a1; align-self: flex-start; }
-        .chat-msg.other { background: #334155; align-self: flex-end; }
-        .chat-input-area { display: flex; gap: 5px; }
-        .chat-input-area input { flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #475569; background: #1e293b; color: white; font-size: 12px; }
-        .chat-input-area button { background: #22c55e; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .close-panel-btn { background: #ef4444; color: white; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; }
 
-        /* عارض الـ PDF المحلي */
-        #pdf-viewer-frame { width: 100%; height: 160px; border-radius: 6px; border: 1px solid #475569; background: #000; margin-top: 6px; display: none; }
+        /* شريط التبويبات (Tabs) داخل القائمة */
+        .sidebar-tabs { display: flex; gap: 6px; margin-bottom: 12px; background: #1e293b; padding: 4px; border-radius: 8px; border: 1px solid #334155; }
+        .tab-btn { flex: 1; background: transparent; color: #94a3b8; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s; }
+        .tab-btn.active { background: #3b82f6; color: white; box-shadow: 0 2px 6px rgba(59,130,246,0.4); }
+
+        /* محتوى التبويبات (Sections) */
+        .tab-content { display: none; flex: 1; flex-direction: column; height: calc(100% - 110px); }
+        .tab-content.active { display: flex; }
+
+        /* تصميم شات ماسنجر الداخلي الاحترافي */
+        .messenger-box { flex: 1; background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 8px; overflow-hidden; }
+        .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px; }
+        .chat-msg { padding: 8px 12px; border-radius: 12px; max-width: 80%; word-break: break-word; font-size: 13px; line-height: 1.4; position: relative; }
+        .chat-msg.me { background: #0284c7; color: white; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .chat-msg.other { background: #334155; color: #f8fafc; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .chat-input-area { display: flex; gap: 6px; margin-top: 8px; background: #0f172a; padding: 6px; border-radius: 8px; border: 1px solid #334155; }
+        .chat-input-area input { flex: 1; background: transparent; border: none; color: white; padding: 6px; font-size: 13px; outline: none; }
+        .chat-input-area button { background: #22c55e; color: white; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; }
+
+        /* تصميم قسم الملفات ومكتبة الـ PDF */
+        .files-box { flex: 1; background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+        #pdf-viewer-frame { width: 100%; flex: 1; border-radius: 8px; border: 1px solid #475569; background: #000; display: none; }
     </style>
 </head>
 <body>
 
-    <!-- زرار اللوحة الجانبية العائم -->
+    <!-- زرار القائمة الجانبية العائم -->
     <button class="floating-sidebar-btn" onclick="toggleSidebar()">
-        <span>📁 الشات وملفات PDF</span>
+        <span>💬 📁 قائمة المذاكرة والمنصة</span>
     </button>
 
-    <!-- اللوحة الجانبية المخفية -->
+    <!-- القائمة الجانبية بستايل الشاشات الكاملة (ماسنجر + ملفات) -->
     <div id="sidePanel" class="side-panel">
         <div class="panel-header">
-            <h3>💬 شات وملفات المذاكرة</h3>
+            <h3>⚙️ مركز التحكم الجماعي</h3>
             <button class="close-panel-btn" onclick="toggleSidebar()">✕</button>
         </div>
 
-        <!-- قسم اختيار ملف PDF من الجهاز مباشرة -->
-        <div class="panel-section">
-            <h4>📄 فتح ملزمة PDF من جهازك</h4>
-            <input type="file" id="pdfFileInput" accept="application/pdf" onchange="loadLocalPdf(event)" style="width: 100%; color: #94a3b8; background: #1e293b; padding: 6px; border-radius: 6px; border: 1px solid #475569; font-size: 11px; cursor: pointer;">
-            <iframe id="pdf-viewer-frame" src=""></iframe>
+        <!-- أزرار التبويبات (Tabs) للمستقبل -->
+        <div class="sidebar-tabs">
+            <button id="tabChatBtn" class="tab-btn active" onclick="switchTab('chat')">💬 شات ماسنجر</button>
+            <button id="tabFilesBtn" class="tab-btn" onclick="switchTab('files')">📁 مكتبة PDF</button>
         </div>
 
-        <!-- قسم الشات النصي الجماعي -->
-        <div class="panel-section" style="flex: 1; display: flex; flex-direction: column;">
-            <h4>💬 الشات الجماعي لايف</h4>
-            <div id="chatBox" class="chat-messages"></div>
-            <div class="chat-input-area">
-                <input type="text" id="chatInput" placeholder="اكتب رسالة..." onkeypress="handleChatEnter(event)">
-                <button onclick="sendChatMessage()">إرسال</button>
+        <!-- 1. شاشة شات ماسنجر الجماعي -->
+        <div id="chatTab" class="tab-content active">
+            <div class="messenger-box">
+                <div id="chatBox" class="chat-messages">
+                    <div style="text-align: center; color: #64748b; font-size: 11px; margin-top: 20px;">أهلاً بك في شات الغرفة لايف 🚀<br>ابدأ بإرسال رسالة لأصحابك الآن</div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="chatInput" placeholder="اكتب رسالة كأنك في ماسنجر..." onkeypress="handleChatEnter(event)">
+                    <button onclick="sendChatMessage()">إرسال</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. شاشة مكتبة ملفات PDF -->
+        <div id="filesTab" class="tab-content">
+            <div class="files-box">
+                <span style="font-size: 12px; color: #94a3b8;">اختر ملزمة أو كتاب من جهازك لعرضه فوراً:</span>
+                <input type="file" id="pdfFileInput" accept="application/pdf" onchange="loadLocalPdf(event)" style="width: 100%; color: #94a3b8; background: #0f172a; padding: 8px; border-radius: 6px; border: 1px solid #475569; font-size: 11px; cursor: pointer; box-sizing: border-box;">
+                <iframe id="pdf-viewer-frame" src=""></iframe>
             </div>
         </div>
     </div>
 
     <div class="container">
-        <h2>📚 منصة المذاكرة الجماعية (فيديو + سبورة + ملفات الجهاز)</h2>
-        <p class="desc">المكالمة شغالّة، السبورة متزامنة، ومن القائمة الجانبية تقدر تفتح أي PDF من جهازك وتسولف مع أصحابك.</p>
+        <h2>📚 منصة المذاكرة الجماعية (فيديو + سبورة + مركز تحكم ماسنجر)</h2>
+        <p class="desc">المكالمة شغالّة، السبورة متزامنة، ومن القائمة الجانبية تقدر تفتح شات ماسنجر أو ترفع ملفات PDF بحرية.</p>
 
         <!-- مكالمة الفيديو الجماعية عبر VDO.ninja -->
         <div class="card">
@@ -161,8 +180,25 @@
     </div>
 
     <script>
+        // التحكم في فتح وغلق القائمة الجانبية
         function toggleSidebar() {
             document.getElementById('sidePanel').classList.toggle('open');
+        }
+
+        // التبديل بين التبويبات (شات ماسنجر / ملفات PDF)
+        function switchTab(tabName) {
+            document.getElementById('tabChatBtn').classList.remove('active');
+            document.getElementById('tabFilesBtn').classList.remove('active');
+            document.getElementById('chatTab').classList.remove('active');
+            document.getElementById('filesTab').classList.remove('active');
+
+            if (tabName === 'chat') {
+                document.getElementById('tabChatBtn').classList.add('active');
+                document.getElementById('chatTab').classList.add('active');
+            } else if (tabName === 'files') {
+                document.getElementById('tabFilesBtn').classList.add('active');
+                document.getElementById('filesTab').classList.add('active');
+            }
         }
 
         function endCall() {
@@ -170,7 +206,7 @@
             iframe.src = iframe.src;
         }
 
-        // تحميل ملف الـ PDF محلياً من الجهاز
+        // تحميل ملف الـ PDF محلياً
         function loadLocalPdf(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -183,7 +219,7 @@
                 client.publish(topic, JSON.stringify({ 
                     type: 'chat', 
                     sender: userId, 
-                    text: "📁 فتح ملف PDF محلي: " + file.name 
+                    text: "📁 قام بفتح ملزمة PDF: " + file.name 
                 }));
             }
         }
@@ -191,7 +227,7 @@
         const userId = "user_" + Math.floor(Math.random() * 100000);
         const canvas = document.getElementById('paintCanvas');
         const ctx = canvas.getContext('2d');
-        const topic = "edu_platform_live_room_2026_v4";
+        const topic = "edu_platform_live_room_2026_v5";
 
         let drawing = false;
         let color = "#000000";
