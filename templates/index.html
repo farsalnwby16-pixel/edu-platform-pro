@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EduPlatform Pro • بث مباشر وسبورة حية</title>
-    <!-- ZEGOCloud UIKits SDK -->
-    <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
-    <!-- MQTT SDK -->
+    
+    <!-- استخدام سيرفرات jsdelivr السريعة بدلاً من unpkg لضمان سرعة التحميل وعدم الحظر -->
+    <script src="https://cdn.jsdelivr.net/npm/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
+    
     <style>
         body { font-family: system-ui, -apple-system, sans-serif; text-align: center; background: #f4f6f9; margin: 0; padding: 15px; color: #333; }
         .card { background: white; padding: 15px; margin: 15px auto; max-width: 850px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
@@ -59,6 +60,13 @@
 
         function initZego() {
             const btn = document.getElementById("start-call-btn");
+            
+            // 🚀 فحص ذكي: لو المكتبة لسه محملتش، نطلب من المستخدم ينتظر ثواني
+            if (typeof ZegoUIKitPrebuilt === 'undefined') {
+                alert("⏳ جاري تجهيز غرفة البث، يرجى الانتظار ثواني قليلة ثم المحاولة مرة أخرى.");
+                return;
+            }
+
             btn.style.display = "none";
 
             try {
