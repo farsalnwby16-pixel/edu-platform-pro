@@ -53,67 +53,103 @@
         }
         .floating-sidebar-btn:hover { background: #006dd9; }
 
-        /* تصميم القائمة الجانبية (شات ماسنجر متكامل) */
+        /* تصميم القائمة الجانبية (شات ماسنجر بالثيم الأبيض الراقي) */
         .side-panel {
             position: fixed;
             top: 0;
             right: -420px;
             width: 390px;
             height: 100%;
-            background: #1e293b;
-            box-shadow: -5px 0 30px rgba(0,0,0,0.6);
+            background: #ffffff;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.5);
             transition: right 0.3s ease-in-out;
             z-index: 1001;
             display: flex;
             flex-direction: column;
-            border-left: 1px solid #334155;
+            border-left: 1px solid #cbd5e1;
             text-align: right;
             box-sizing: border-box;
+            color: #1e293b;
         }
         .side-panel.open { right: 0; }
         
-        .messenger-header { display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 12px 15px; border-bottom: 1px solid #334155; }
-        .messenger-title { display: flex; align-items: center; gap: 8px; color: #f8fafc; font-size: 15px; font-weight: bold; }
+        .messenger-header { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 12px 15px; border-bottom: 1px solid #e2e8f0; }
+        .messenger-title { display: flex; align-items: center; gap: 8px; color: #0f172a; font-size: 15px; font-weight: bold; }
         .messenger-title span.dot { width: 9px; height: 9px; background: #22c55e; border-radius: 50%; display: inline-block; }
-        .close-panel-btn { background: #334155; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 14px; }
-        .close-panel-btn:hover { background: #ef4444; }
+        .close-panel-btn { background: #e2e8f0; color: #0f172a; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .close-panel-btn:hover { background: #ef4444; color: white; }
 
-        /* منطقة رسائل ماسنجر */
-        .chat-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; background: #1e293b; }
-        .chat-msg { padding: 10px 14px; border-radius: 16px; max-width: 82%; word-break: break-word; font-size: 13px; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        /* صندوق الرسائل بخلفية بيضاء نقية */
+        .chat-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: #ffffff; }
+        .chat-msg { padding: 10px 14px; border-radius: 16px; max-width: 82%; word-break: break-word; font-size: 13px; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .chat-msg.me { background: #0084ff; color: white; align-self: flex-end; border-bottom-left-radius: 4px; }
-        .chat-msg.other { background: #334155; color: #f8fafc; align-self: flex-start; border-bottom-right-radius: 4px; }
+        .chat-msg.other { background: #f1f5f9; color: #1e293b; align-self: flex-start; border-bottom-right-radius: 4px; border: 1px solid #e2e8f0; }
         
-        /* كارت الملف المرفق داخل الشات */
-        .file-card { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 8px; border-radius: 8px; margin-top: 5px; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+        /* كارت الملفات والصور والصوتيات داخل الشات */
+        .media-container { margin-top: 6px; border-radius: 8px; overflow: hidden; }
+        .media-container img { width: 100%; max-height: 180px; object-fit: cover; border-radius: 6px; cursor: pointer; }
+        .media-container audio { width: 100%; height: 32px; margin-top: 4px; }
+        .file-card { background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1); padding: 8px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
         .file-card span { font-size: 12px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .file-card button { background: #22c55e; color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: bold; }
 
-        /* شريط الكتابة أسفل الكيبورد زي ماسنجر تماماً */
-        .messenger-input-container { background: #0f172a; padding: 10px 12px; border-top: 1px solid #334155; display: flex; align-items: center; gap: 8px; }
-        .attach-btn { background: #334155; color: #38bdf8; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: 0.2s; flex-shrink: 0; }
-        .attach-btn:hover { background: #475569; color: white; }
-        .messenger-input-container input[type="text"] { flex: 1; background: #1e293b; border: 1px solid #475569; border-radius: 20px; color: white; padding: 8px 14px; font-size: 13px; outline: none; }
+        /* شريط الإدخال السفلي والمرفقات */
+        .messenger-input-container { background: #f8fafc; padding: 10px 12px; border-top: 1px solid #e2e8f0; display: flex; align-items: center; gap: 8px; position: relative; }
+        .attach-btn { background: #e2e8f0; color: #0084ff; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: 0.2s; flex-shrink: 0; }
+        .attach-btn:hover { background: #cbd5e1; }
+        .messenger-input-container input[type="text"] { flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 20px; color: #0f172a; padding: 8px 14px; font-size: 13px; outline: none; }
         .messenger-input-container input[type="text"]:focus { border-color: #0084ff; }
         .send-btn { background: #0084ff; color: white; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
         .send-btn:hover { background: #006dd9; }
 
-        /* عارض ملفات الـ PDF المنبثق فوق الشات عند فتحه */
-        #pdf-viewer-container { display: none; height: 200px; background: #000; border-bottom: 1px solid #334155; position: relative; }
+        /* قائمة خيارات المشاركة المنبثقة فوق زرار المرفقات */
+        .attach-menu {
+            position: absolute;
+            bottom: 60px;
+            right: 12px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            display: none;
+            flex-direction: column;
+            gap: 2px;
+            padding: 6px;
+            z-index: 1005;
+            border: 1px solid #e2e8f0;
+            width: 150px;
+        }
+        .attach-menu button {
+            background: transparent;
+            border: none;
+            color: #1e293b;
+            padding: 8px 10px;
+            text-align: right;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .attach-menu button:hover { background: #f1f5f9; color: #0084ff; }
+
+        /* عارض ملفات الـ PDF المنبثق أعلى الشات */
+        #pdf-viewer-container { display: none; height: 200px; background: #000; border-bottom: 1px solid #e2e8f0; position: relative; }
         #pdf-viewer-frame { width: 100%; height: 100%; border: none; }
         .close-pdf-btn { position: absolute; top: 5px; left: 5px; background: #ef4444; color: white; border: none; width: 22px; height: 22px; border-radius: 50%; cursor: pointer; font-size: 11px; z-index: 10; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <!-- زرار القائمة الجانبية العائم (ماسنجر الشات والملازم) -->
+    <!-- زرار القائمة الجانبية العائم -->
     <button class="floating-sidebar-btn" onclick="toggleSidebar()">
         <span>💬 شات الغرفة وملفات PDF</span>
     </button>
 
-    <!-- القائمة الجانبية (شات ماسنجر متكامل) -->
+    <!-- القائمة الجانبية (شات ماسنجر بالثيم الأبيض) -->
     <div id="sidePanel" class="side-panel">
-        <!-- هيدر ماسنجر -->
         <div class="messenger-header">
             <div class="messenger-title">
                 <span class="dot"></span>
@@ -122,33 +158,42 @@
             <button class="close-panel-btn" onclick="toggleSidebar()">✕</button>
         </div>
 
-        <!-- عارض الـ PDF يظهر هنا مؤقتاً فوق الشات لو حد فتح ملزمة -->
+        <!-- عارض الـ PDF -->
         <div id="pdf-viewer-container">
             <button class="close-pdf-btn" onclick="closePdfViewer()">✕</button>
             <iframe id="pdf-viewer-frame" src=""></iframe>
         </div>
 
-        <!-- صندوق الرسائل (ماسنجر ستورى) -->
+        <!-- صندوق الرسائل -->
         <div id="chatBox" class="chat-messages">
             <div style="text-align: center; color: #64748b; font-size: 11px; margin-top: 30px;">
-                أهلاً بك في شات الغرفة الجماعي 🚀<br>تحدث بحرية وشارك مذكراتك مع أصحابك الآن من زرار المرفقات 📎
+                أهلاً بك في شات الغرفة الجماعي 🚀<br>شارك صور، مذكرات PDF، أو صوتيات مع أصحابك بحرية تامة!
             </div>
         </div>
 
-        <!-- شريط الإدخال السفلي (زي ماسنجر بالضبط: مرفقات + كيبورد + إرسال) -->
+        <!-- قائمة خيارات المشاركة المنبثقة -->
+        <div id="attachMenu" class="attach-menu">
+            <button onclick="triggerFilePicker('image')">🖼️ صورة</button>
+            <button onclick="triggerFilePicker('pdf')">📄 ملف PDF</button>
+            <button onclick="triggerFilePicker('audio')">🎵 ملف صوتي</button>
+        </div>
+
+        <!-- حقول رفع الملفات المخفية لأنواع مختلفة -->
+        <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleFileSelected(event, 'image')">
+        <input type="file" id="pdfInput" accept="application/pdf" style="display: none;" onchange="handleFileSelected(event, 'pdf')">
+        <input type="file" id="audioInput" accept="audio/*" style="display: none;" onchange="handleFileSelected(event, 'audio')">
+
+        <!-- شريط الكتابة والمرفقات -->
         <div class="messenger-input-container">
-            <!-- زرار اختيار ملف PDF مخفي يتم تفعيله عبر أيقونة المشبك -->
-            <input type="file" id="pdfFileInput" accept="application/pdf" style="display: none;" onchange="loadAndSharePdf(event)">
-            
-            <button class="attach-btn" onclick="document.getElementById('pdfFileInput').click()" title="إرسال ملف PDF">📎</button>
-            <input type="text" id="chatInput" placeholder="اكتب رسالتك..." onkeypress="handleChatEnter(event)">
+            <button class="attach-btn" onclick="toggleAttachMenu()" title="مشاركات إضافية">📎</button>
+            <input type="text" id="chatInput" placeholder="اكتب رسالة..." onkeypress="handleChatEnter(event)">
             <button class="send-btn" onclick="sendChatMessage()">➤</button>
         </div>
     </div>
 
     <div class="container">
-        <h2>📚 منصة المذاكرة الجماعية (فيديو + سبورة + ماسنجر متكامل)</h2>
-        <p class="desc">المكالمة شغالّة، السبورة متزامنة، ومن زرار الشات العائم تقدر تسولف وترفع مذكراتك بستايل ماسنجر حقيقي.</p>
+        <h2>📚 منصة المذاكرة الجماعية (فيديو + سبورة + شات أبيض احترافي)</h2>
+        <p class="desc">المكالمة شغالّة، السبورة متزامنة، ومن شات الماسنجر الأبيض تقدر تشارك أي نوع ملفات براحتك.</p>
 
         <!-- مكالمة الفيديو الجماعية عبر VDO.ninja -->
         <div class="card">
@@ -184,6 +229,19 @@
     <script>
         function toggleSidebar() {
             document.getElementById('sidePanel').classList.toggle('open');
+            document.getElementById('attachMenu').style.display = 'none';
+        }
+
+        function toggleAttachMenu() {
+            const menu = document.getElementById('attachMenu');
+            menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function triggerFilePicker(type) {
+            document.getElementById('attachMenu').style.display = 'none';
+            if (type === 'image') document.getElementById('imageInput').click();
+            else if (type === 'pdf') document.getElementById('pdfInput').click();
+            else if (type === 'audio') document.getElementById('audioInput').click();
         }
 
         function endCall() {
@@ -191,29 +249,31 @@
             iframe.src = iframe.src;
         }
 
-        // اختيار ملف PDF من زرار المرفقات بجانب الكيبورد ومشاركته في الشات
-        function loadAndSharePdf(event) {
+        // التعامل مع الملف المختار (صورة، PDF، صوت)
+        function handleFileSelected(event, fileType) {
             const file = event.target.files[0];
             if (!file) return;
             const fileURL = URL.createObjectURL(file);
             
-            // عرض الملف في الإطار المنبثق فوق الشات
-            const container = document.getElementById('pdf-viewer-container');
-            const frame = document.getElementById('pdf-viewer-frame');
-            container.style.display = 'block';
-            frame.src = fileURL;
+            let descText = "";
+            if (fileType === 'image') descText = "شارك صورة: " + file.name;
+            else if (fileType === 'pdf') {
+                descText = "شارك ملف PDF: " + file.name;
+                openSharedPdf(fileURL);
+            }
+            else if (fileType === 'audio') descText = "شارك تسجيل صوتي: " + file.name;
 
-            // إرسال رسالة في الشات الجماعي بأن فلاناً شارك ملفاً
             if (client.connected) {
                 client.publish(topic, JSON.stringify({ 
                     type: 'chat', 
                     sender: userId, 
-                    text: "شارك ملف PDF: " + file.name,
-                    hasFile: true,
+                    text: descText,
+                    fileType: fileType,
                     fileName: file.name,
                     fileUrl: fileURL
                 }));
             }
+            event.target.value = ''; // إعادة تعيين الحقل
         }
 
         function closePdfViewer() {
@@ -224,7 +284,7 @@
         const userId = "user_" + Math.floor(Math.random() * 100000);
         const canvas = document.getElementById('paintCanvas');
         const ctx = canvas.getContext('2d');
-        const topic = "edu_platform_live_room_2026_v6";
+        const topic = "edu_platform_live_room_2026_v7";
 
         let drawing = false;
         let color = "#000000";
@@ -268,7 +328,7 @@
             if (!text) return;
 
             if (client.connected) {
-                client.publish(topic, JSON.stringify({ type: 'chat', sender: userId, text: text, hasFile: false }));
+                client.publish(topic, JSON.stringify({ type: 'chat', sender: userId, text: text, fileType: 'none' }));
             }
             input.value = '';
         }
@@ -284,11 +344,23 @@
             
             let content = `<div><strong>${isMe ? "أنت" : "صاحبك"}:</strong> ${data.text}</div>`;
             
-            if (data.hasFile && data.fileUrl) {
+            if (data.fileType === 'image' && data.fileUrl) {
                 content += `
-                    <div class="file-card">
+                    <div class="media-container">
+                        <img src="${data.fileUrl}" onclick="window.open('${data.fileUrl}', '_blank')" alt="صورة">
+                    </div>
+                `;
+            } else if (data.fileType === 'pdf' && data.fileUrl) {
+                content += `
+                    <div class="file-card" style="margin-top:6px;">
                         <span>📄 ${data.fileName}</span>
-                        <button onclick="openSharedPdf('${data.fileUrl}')">عرض الملزمة</button>
+                        <button onclick="openSharedPdf('${data.fileUrl}')">عرض</button>
+                    </div>
+                `;
+            } else if (data.fileType === 'audio' && data.fileUrl) {
+                content += `
+                    <div class="media-container" style="margin-top:6px;">
+                        <audio controls src="${data.fileUrl}"></audio>
                     </div>
                 `;
             }
