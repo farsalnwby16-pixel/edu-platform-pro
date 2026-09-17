@@ -37,30 +37,30 @@
             position: fixed;
             top: 20px;
             left: 20px;
-            background: #38bdf8;
-            color: #0f172a;
+            background: #0084ff;
+            color: white;
             border: none;
-            padding: 10px 16px;
+            padding: 10px 18px;
             border-radius: 30px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(56,189,248,0.4);
+            box-shadow: 0 4px 15px rgba(0,132,255,0.4);
             z-index: 1000;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             font-size: 13px;
         }
-        .floating-sidebar-btn:hover { background: #0ea5e9; color: white; }
+        .floating-sidebar-btn:hover { background: #006dd9; }
 
-        /* تصميم القائمة الجانبية (الشاشة الكاملة من جنب) */
+        /* تصميم القائمة الجانبية (شات ماسنجر متكامل) */
         .side-panel {
             position: fixed;
             top: 0;
-            right: -400px;
-            width: 380px;
+            right: -420px;
+            width: 390px;
             height: 100%;
-            background: #0f172a;
+            background: #1e293b;
             box-shadow: -5px 0 30px rgba(0,0,0,0.6);
             transition: right 0.3s ease-in-out;
             z-index: 1001;
@@ -69,84 +69,86 @@
             border-left: 1px solid #334155;
             text-align: right;
             box-sizing: border-box;
-            padding: 15px;
         }
         .side-panel.open { right: 0; }
         
-        .panel-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 12px; }
-        .panel-header h3 { margin: 0; color: #38bdf8; font-size: 16px; }
-        .close-panel-btn { background: #ef4444; color: white; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+        .messenger-header { display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 12px 15px; border-bottom: 1px solid #334155; }
+        .messenger-title { display: flex; align-items: center; gap: 8px; color: #f8fafc; font-size: 15px; font-weight: bold; }
+        .messenger-title span.dot { width: 9px; height: 9px; background: #22c55e; border-radius: 50%; display: inline-block; }
+        .close-panel-btn { background: #334155; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .close-panel-btn:hover { background: #ef4444; }
 
-        /* شريط التبويبات (Tabs) داخل القائمة */
-        .sidebar-tabs { display: flex; gap: 6px; margin-bottom: 12px; background: #1e293b; padding: 4px; border-radius: 8px; border: 1px solid #334155; }
-        .tab-btn { flex: 1; background: transparent; color: #94a3b8; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s; }
-        .tab-btn.active { background: #3b82f6; color: white; box-shadow: 0 2px 6px rgba(59,130,246,0.4); }
+        /* منطقة رسائل ماسنجر */
+        .chat-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; background: #1e293b; }
+        .chat-msg { padding: 10px 14px; border-radius: 16px; max-width: 82%; word-break: break-word; font-size: 13px; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .chat-msg.me { background: #0084ff; color: white; align-self: flex-end; border-bottom-left-radius: 4px; }
+        .chat-msg.other { background: #334155; color: #f8fafc; align-self: flex-start; border-bottom-right-radius: 4px; }
+        
+        /* كارت الملف المرفق داخل الشات */
+        .file-card { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 8px; border-radius: 8px; margin-top: 5px; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+        .file-card span { font-size: 12px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .file-card button { background: #22c55e; color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: bold; }
 
-        /* محتوى التبويبات (Sections) */
-        .tab-content { display: none; flex: 1; flex-direction: column; height: calc(100% - 110px); }
-        .tab-content.active { display: flex; }
+        /* شريط الكتابة أسفل الكيبورد زي ماسنجر تماماً */
+        .messenger-input-container { background: #0f172a; padding: 10px 12px; border-top: 1px solid #334155; display: flex; align-items: center; gap: 8px; }
+        .attach-btn { background: #334155; color: #38bdf8; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: 0.2s; flex-shrink: 0; }
+        .attach-btn:hover { background: #475569; color: white; }
+        .messenger-input-container input[type="text"] { flex: 1; background: #1e293b; border: 1px solid #475569; border-radius: 20px; color: white; padding: 8px 14px; font-size: 13px; outline: none; }
+        .messenger-input-container input[type="text"]:focus { border-color: #0084ff; }
+        .send-btn { background: #0084ff; color: white; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .send-btn:hover { background: #006dd9; }
 
-        /* تصميم شات ماسنجر الداخلي الاحترافي */
-        .messenger-box { flex: 1; background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 8px; overflow-hidden; }
-        .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px; }
-        .chat-msg { padding: 8px 12px; border-radius: 12px; max-width: 80%; word-break: break-word; font-size: 13px; line-height: 1.4; position: relative; }
-        .chat-msg.me { background: #0284c7; color: white; align-self: flex-start; border-bottom-left-radius: 2px; }
-        .chat-msg.other { background: #334155; color: #f8fafc; align-self: flex-end; border-bottom-right-radius: 2px; }
-        .chat-input-area { display: flex; gap: 6px; margin-top: 8px; background: #0f172a; padding: 6px; border-radius: 8px; border: 1px solid #334155; }
-        .chat-input-area input { flex: 1; background: transparent; border: none; color: white; padding: 6px; font-size: 13px; outline: none; }
-        .chat-input-area button { background: #22c55e; color: white; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; }
-
-        /* تصميم قسم الملفات ومكتبة الـ PDF */
-        .files-box { flex: 1; background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
-        #pdf-viewer-frame { width: 100%; flex: 1; border-radius: 8px; border: 1px solid #475569; background: #000; display: none; }
+        /* عارض ملفات الـ PDF المنبثق فوق الشات عند فتحه */
+        #pdf-viewer-container { display: none; height: 200px; background: #000; border-bottom: 1px solid #334155; position: relative; }
+        #pdf-viewer-frame { width: 100%; height: 100%; border: none; }
+        .close-pdf-btn { position: absolute; top: 5px; left: 5px; background: #ef4444; color: white; border: none; width: 22px; height: 22px; border-radius: 50%; cursor: pointer; font-size: 11px; z-index: 10; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <!-- زرار القائمة الجانبية العائم -->
+    <!-- زرار القائمة الجانبية العائم (ماسنجر الشات والملازم) -->
     <button class="floating-sidebar-btn" onclick="toggleSidebar()">
-        <span>💬 📁 قائمة المذاكرة والمنصة</span>
+        <span>💬 شات الغرفة وملفات PDF</span>
     </button>
 
-    <!-- القائمة الجانبية بستايل الشاشات الكاملة (ماسنجر + ملفات) -->
+    <!-- القائمة الجانبية (شات ماسنجر متكامل) -->
     <div id="sidePanel" class="side-panel">
-        <div class="panel-header">
-            <h3>⚙️ مركز التحكم الجماعي</h3>
+        <!-- هيدر ماسنجر -->
+        <div class="messenger-header">
+            <div class="messenger-title">
+                <span class="dot"></span>
+                <span>شات مجموعة المذاكرة لايف</span>
+            </div>
             <button class="close-panel-btn" onclick="toggleSidebar()">✕</button>
         </div>
 
-        <!-- أزرار التبويبات (Tabs) للمستقبل -->
-        <div class="sidebar-tabs">
-            <button id="tabChatBtn" class="tab-btn active" onclick="switchTab('chat')">💬 شات ماسنجر</button>
-            <button id="tabFilesBtn" class="tab-btn" onclick="switchTab('files')">📁 مكتبة PDF</button>
+        <!-- عارض الـ PDF يظهر هنا مؤقتاً فوق الشات لو حد فتح ملزمة -->
+        <div id="pdf-viewer-container">
+            <button class="close-pdf-btn" onclick="closePdfViewer()">✕</button>
+            <iframe id="pdf-viewer-frame" src=""></iframe>
         </div>
 
-        <!-- 1. شاشة شات ماسنجر الجماعي -->
-        <div id="chatTab" class="tab-content active">
-            <div class="messenger-box">
-                <div id="chatBox" class="chat-messages">
-                    <div style="text-align: center; color: #64748b; font-size: 11px; margin-top: 20px;">أهلاً بك في شات الغرفة لايف 🚀<br>ابدأ بإرسال رسالة لأصحابك الآن</div>
-                </div>
-                <div class="chat-input-area">
-                    <input type="text" id="chatInput" placeholder="اكتب رسالة كأنك في ماسنجر..." onkeypress="handleChatEnter(event)">
-                    <button onclick="sendChatMessage()">إرسال</button>
-                </div>
+        <!-- صندوق الرسائل (ماسنجر ستورى) -->
+        <div id="chatBox" class="chat-messages">
+            <div style="text-align: center; color: #64748b; font-size: 11px; margin-top: 30px;">
+                أهلاً بك في شات الغرفة الجماعي 🚀<br>تحدث بحرية وشارك مذكراتك مع أصحابك الآن من زرار المرفقات 📎
             </div>
         </div>
 
-        <!-- 2. شاشة مكتبة ملفات PDF -->
-        <div id="filesTab" class="tab-content">
-            <div class="files-box">
-                <span style="font-size: 12px; color: #94a3b8;">اختر ملزمة أو كتاب من جهازك لعرضه فوراً:</span>
-                <input type="file" id="pdfFileInput" accept="application/pdf" onchange="loadLocalPdf(event)" style="width: 100%; color: #94a3b8; background: #0f172a; padding: 8px; border-radius: 6px; border: 1px solid #475569; font-size: 11px; cursor: pointer; box-sizing: border-box;">
-                <iframe id="pdf-viewer-frame" src=""></iframe>
-            </div>
+        <!-- شريط الإدخال السفلي (زي ماسنجر بالضبط: مرفقات + كيبورد + إرسال) -->
+        <div class="messenger-input-container">
+            <!-- زرار اختيار ملف PDF مخفي يتم تفعيله عبر أيقونة المشبك -->
+            <input type="file" id="pdfFileInput" accept="application/pdf" style="display: none;" onchange="loadAndSharePdf(event)">
+            
+            <button class="attach-btn" onclick="document.getElementById('pdfFileInput').click()" title="إرسال ملف PDF">📎</button>
+            <input type="text" id="chatInput" placeholder="اكتب رسالتك..." onkeypress="handleChatEnter(event)">
+            <button class="send-btn" onclick="sendChatMessage()">➤</button>
         </div>
     </div>
 
     <div class="container">
-        <h2>📚 منصة المذاكرة الجماعية (فيديو + سبورة + مركز تحكم ماسنجر)</h2>
-        <p class="desc">المكالمة شغالّة، السبورة متزامنة، ومن القائمة الجانبية تقدر تفتح شات ماسنجر أو ترفع ملفات PDF بحرية.</p>
+        <h2>📚 منصة المذاكرة الجماعية (فيديو + سبورة + ماسنجر متكامل)</h2>
+        <p class="desc">المكالمة شغالّة، السبورة متزامنة، ومن زرار الشات العائم تقدر تسولف وترفع مذكراتك بستايل ماسنجر حقيقي.</p>
 
         <!-- مكالمة الفيديو الجماعية عبر VDO.ninja -->
         <div class="card">
@@ -180,25 +182,8 @@
     </div>
 
     <script>
-        // التحكم في فتح وغلق القائمة الجانبية
         function toggleSidebar() {
             document.getElementById('sidePanel').classList.toggle('open');
-        }
-
-        // التبديل بين التبويبات (شات ماسنجر / ملفات PDF)
-        function switchTab(tabName) {
-            document.getElementById('tabChatBtn').classList.remove('active');
-            document.getElementById('tabFilesBtn').classList.remove('active');
-            document.getElementById('chatTab').classList.remove('active');
-            document.getElementById('filesTab').classList.remove('active');
-
-            if (tabName === 'chat') {
-                document.getElementById('tabChatBtn').classList.add('active');
-                document.getElementById('chatTab').classList.add('active');
-            } else if (tabName === 'files') {
-                document.getElementById('tabFilesBtn').classList.add('active');
-                document.getElementById('filesTab').classList.add('active');
-            }
         }
 
         function endCall() {
@@ -206,28 +191,40 @@
             iframe.src = iframe.src;
         }
 
-        // تحميل ملف الـ PDF محلياً
-        function loadLocalPdf(event) {
+        // اختيار ملف PDF من زرار المرفقات بجانب الكيبورد ومشاركته في الشات
+        function loadAndSharePdf(event) {
             const file = event.target.files[0];
             if (!file) return;
             const fileURL = URL.createObjectURL(file);
+            
+            // عرض الملف في الإطار المنبثق فوق الشات
+            const container = document.getElementById('pdf-viewer-container');
             const frame = document.getElementById('pdf-viewer-frame');
-            frame.style.display = 'block';
+            container.style.display = 'block';
             frame.src = fileURL;
 
+            // إرسال رسالة في الشات الجماعي بأن فلاناً شارك ملفاً
             if (client.connected) {
                 client.publish(topic, JSON.stringify({ 
                     type: 'chat', 
                     sender: userId, 
-                    text: "📁 قام بفتح ملزمة PDF: " + file.name 
+                    text: "شارك ملف PDF: " + file.name,
+                    hasFile: true,
+                    fileName: file.name,
+                    fileUrl: fileURL
                 }));
             }
+        }
+
+        function closePdfViewer() {
+            document.getElementById('pdf-viewer-container').style.display = 'none';
+            document.getElementById('pdf-viewer-frame').src = "";
         }
 
         const userId = "user_" + Math.floor(Math.random() * 100000);
         const canvas = document.getElementById('paintCanvas');
         const ctx = canvas.getContext('2d');
-        const topic = "edu_platform_live_room_2026_v5";
+        const topic = "edu_platform_live_room_2026_v6";
 
         let drawing = false;
         let color = "#000000";
@@ -260,7 +257,7 @@
                 } else if (data.type === 'clear') {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                 } else if (data.type === 'chat') {
-                    appendChatMsg(data.sender, data.text, data.sender === userId);
+                    appendChatMsg(data, data.sender === userId);
                 }
             } catch (e) {}
         });
@@ -271,7 +268,7 @@
             if (!text) return;
 
             if (client.connected) {
-                client.publish(topic, JSON.stringify({ type: 'chat', sender: userId, text: text }));
+                client.publish(topic, JSON.stringify({ type: 'chat', sender: userId, text: text, hasFile: false }));
             }
             input.value = '';
         }
@@ -280,13 +277,32 @@
             if (e.key === 'Enter') sendChatMessage();
         }
 
-        function appendChatMsg(sender, text, isMe) {
+        function appendChatMsg(data, isMe) {
             const chatBox = document.getElementById('chatBox');
             const div = document.createElement('div');
             div.className = "chat-msg " + (isMe ? "me" : "other");
-            div.innerText = (isMe ? "أنت: " : "صاحبك: ") + text;
+            
+            let content = `<div><strong>${isMe ? "أنت" : "صاحبك"}:</strong> ${data.text}</div>`;
+            
+            if (data.hasFile && data.fileUrl) {
+                content += `
+                    <div class="file-card">
+                        <span>📄 ${data.fileName}</span>
+                        <button onclick="openSharedPdf('${data.fileUrl}')">عرض الملزمة</button>
+                    </div>
+                `;
+            }
+            
+            div.innerHTML = content;
             chatBox.appendChild(div);
             chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function openSharedPdf(url) {
+            const container = document.getElementById('pdf-viewer-container');
+            const frame = document.getElementById('pdf-viewer-frame');
+            container.style.display = 'block';
+            frame.src = url;
         }
 
         function getCoord(e) {
