@@ -3,32 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduPlatform Pro</title>
+    <title>EduPlatform Pro • مكالمة جماعية</title>
     <script src="https://download.agora.io/sdk/web/AgoraRTC_N-4.20.0.js"></script>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #f4f6f9; margin: 0; padding: 20px; }
-        .card { background: white; padding: 15px; margin: 15px auto; max-width: 500px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        #video-container { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-        .video-box { width: 200px; height: 150px; background: #1a1a2e; border-radius: 8px; overflow: hidden; position: relative; }
-        button { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        canvas { border: 2px solid #007bff; border-radius: 8px; background: white; cursor: crosshair; touch-action: none; }
+        body { font-family: sans-serif; text-align: center; background: #f4f6f9; margin: 0; padding: 15px; }
+        .card { background: white; padding: 15px; margin: 15px auto; max-width: 800px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        #video-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 15px; }
+        .video-box { width: 160px; height: 120px; background: #1a1a2e; border-radius: 8px; overflow: hidden; position: relative; border: 2px solid #007bff; }
+        .video-box span { position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.6); color: white; padding: 2px 6px; font-size: 11px; border-radius: 4px; z-index: 10; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        canvas { border: 2px solid #007bff; border-radius: 8px; background: white; cursor: crosshair; touch-action: none; width: 100%; max-width: 400px; height: 300px; }
     </style>
 </head>
 <body>
-    <h2>EduPlatform Pro • بث مباشر</h2>
+    <h2>EduPlatform Pro • بث مباشر جماعي</h2>
 
     <div class="card">
-        <h3>🎥 مكالمة الفيديو الحية (Agora)</h3>
-        <button onclick="joinChannel()">تشغيل الكاميرا والمايك</button>
+        <h3>🎥 مكالمة الفيديو الجماعية (تتسع لكل الفريق)</h3>
+        <button id="join-btn" onclick="joinChannel()">الانضمام للمكالمة الجماعية</button>
         <div id="video-container">
-            <div id="local-player" class="video-box"></div>
-            <div id="remote-player" class="video-box"></div>
+            <div id="local-player" class="video-box"><span>أنت</span></div>
         </div>
     </div>
 
     <div class="card">
         <h3>🖥️ السبورة التفاعلية</h3>
-        <canvas id="paintCanvas" width="300" height="300"></canvas>
+        <canvas id="paintCanvas" width="400" height="300"></canvas>
     </div>
 
     <script>
@@ -39,16 +39,41 @@
         let rtc = { client: null, localAudioTrack: null, localVideoTrack: null };
 
         async function joinChannel() {
+            document.getElementById("join-btn").disabled = true;
+            document.getElementById("join-btn").innerText = "جاري الاتصال...";
+
             rtc.client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
             
+            // إضافة مربع فيديو جديد لكل شخص ينضم للغرفة تلقائياً
             rtc.client.on("user-published", async (user, mediaType) => {
                 await rtc.client.subscribe(user, mediaType);
                 if (mediaType === "video") {
-                    user.videoTrack.play("remote-player");
+                    let playerContainer = document.getElementById("player-" + user.uid);
+                    if (!playerContainer) {
+                        playerContainer = document.createElement("div");
+                        playerContainer.id = "player-" + user.uid;
+                        playerContainer.className = "video-box";
+                        playerContainer.innerHTML = `<span>صديق ${user.uid}</span>`;
+                        document.getElementById("video-container").appendChild(playerContainer);
+                    }
+                    user.videoTrack.play("player-" + user.uid);
                 }
                 if (mediaType === "audio") {
                     user.audioTrack.play();
                 }
+            });
+
+            // حذف مربع الفيديو لو حد خرج من المكالمة
+            rtc.client.on("user-unpublished", (user, mediaType) => {
+                if (mediaType === "video") {
+                    const playerContainer = document.getElementById("player-" + user.uid);
+                    if (playerContainer) playerContainer.remove();
+                }
+            });
+
+            rtc.client.on("user-left", (user) => {
+                const playerContainer = document.getElementById("player-" + user.uid);
+                if (playerContainer) playerContainer.remove();
             });
 
             await rtc.client.join(appId, channel, token, null);
@@ -56,10 +81,11 @@
             rtc.localVideoTrack = await AgoraRTC.createCameraVideoTrack();
             rtc.localVideoTrack.play("local-player");
             await rtc.client.publish([rtc.localAudioTrack, rtc.localVideoTrack]);
-            alert("تم الانضمام للمكالمة بنجاح!");
+            
+            document.getElementById("join-btn").innerText = "أنت متصل الآن ✅";
         }
 
-        // كود بسيط للرسم المحلي
+        // كود السبورة
         const canvas = document.getElementById('paintCanvas');
         const ctx = canvas.getContext('2d');
         let drawing = false;
