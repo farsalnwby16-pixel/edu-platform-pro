@@ -3,39 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduPlatform Pro • مكالمة جماعية</title>
+    <title>EduPlatform Pro • بث مباشر وسبورة حية</title>
+    <!-- Agora RTC SDK -->
     <script src="https://download.agora.io/sdk/web/AgoraRTC_N-4.20.0.js"></script>
+    <!-- MQTT SDK for Live Whiteboard Sync -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #f4f6f9; margin: 0; padding: 15px; }
-        .card { background: white; padding: 15px; margin: 15px auto; max-width: 800px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        body { font-family: sans-serif; text-align: center; background: #f4f6f9; margin: 0; padding: 15px; color: #333; }
+        .card { background: white; padding: 15px; margin: 15px auto; max-width: 850px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         #video-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 15px; }
         .video-box { width: 160px; height: 120px; background: #1a1a2e; border-radius: 8px; overflow: hidden; position: relative; border: 2px solid #007bff; }
         .video-box span { position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.6); color: white; padding: 2px 6px; font-size: 11px; border-radius: 4px; z-index: 10; }
-        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; }
-        canvas { border: 2px solid #007bff; border-radius: 8px; background: white; cursor: crosshair; touch-action: none; width: 100%; max-width: 400px; height: 300px; }
+        button { background: #007bff; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; margin: 5px; }
+        button:hover { background: #0056b3; }
+        .toolbar { margin: 10px 0; display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .color-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #ccc; cursor: pointer; display: inline-block; transition: transform 0.1s; }
+        .color-btn.active { border: 3px solid #000; transform: scale(1.2); }
+        canvas { border: 2px solid #007bff; border-radius: 8px; background: white; cursor: crosshair; touch-action: none; width: 100%; max-width: 700px; height: 350px; }
+        .status-badge { display: inline-block; padding: 5px 12px; border-radius: 12px; font-size: 13px; font-weight: bold; margin-bottom: 10px; }
+        .online { background: #e6f4ea; color: #137333; }
+        .offline { background: #fce8e6; color: #c5221f; }
     </style>
 </head>
 <body>
-    <h2>EduPlatform Pro • بث مباشر جماعي</h2>
+    <h2>EduPlatform Pro • بث مباشر وسبورة تفاعلية 100%</h2>
 
+    <!-- قسم الفيديو -->
     <div class="card">
-        <h3>🎥 مكالمة الفيديو الجماعية (تتسع لكل الفريق)</h3>
+        <h3>🎥 مكالمة الفيديو الجماعية (تتسع للفريق كامل)</h3>
         <button id="join-btn" onclick="joinChannel()">الانضمام للمكالمة الجماعية</button>
         <div id="video-container">
             <div id="local-player" class="video-box"><span>أنت</span></div>
         </div>
     </div>
 
+    <!-- قسم السبورة اللايف -->
     <div class="card">
-        <h3>🖥️ السبورة التفاعلية</h3>
-        <canvas id="paintCanvas" width="400" height="300"></canvas>
+        <h3>🖥️ السبورة التفاعلية الحية (Real-Time Whiteboard)</h3>
+        <div id="whiteboard-status" class="status-badge offline">جاري الربط بالسبورة اللايف...</div>
+        
+        <div class="toolbar">
+            <span>الألوان:</span>
+            <div class="color-btn active" style="background: #000000;" onclick="setColor('#000000', this)"></div>
+            <div class="color-btn" style="background: #d93025;" onclick="setColor('#d93025', this)"></div>
+            <div class="color-btn" style="background: #1a73e8;" onclick="setColor('#1a73e8', this)"></div>
+            <div class="color-btn" style="background: #1e8e3e;" onclick="setColor('#1e8e3e', this)"></div>
+            <div class="color-btn" style="background: #f9ab00;" onclick="setColor('#f9ab00', this)"></div>
+            <button onclick="setEraser()" style="background: #6c757d;">🧹 ممحاة</button>
+            <button onclick="sendClearBoard()" style="background: #dc3545;">🗑️ مسح الكل</button>
+        </div>
+
+        <canvas id="paintCanvas" width="700" height="350"></canvas>
     </div>
 
     <script>
+        // --- 1. كود مكالمة الفيديو (Agora RTC) ---
         const appId = "2b0b7c5a99f247de8305750411dd1296";
         const channel = "main-room";
         const token = null;
-
         let rtc = { client: null, localAudioTrack: null, localVideoTrack: null };
 
         async function joinChannel() {
@@ -44,7 +69,6 @@
 
             rtc.client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
             
-            // إضافة مربع فيديو جديد لكل شخص ينضم للغرفة تلقائياً
             rtc.client.on("user-published", async (user, mediaType) => {
                 await rtc.client.subscribe(user, mediaType);
                 if (mediaType === "video") {
@@ -63,7 +87,6 @@
                 }
             });
 
-            // حذف مربع الفيديو لو حد خرج من المكالمة
             rtc.client.on("user-unpublished", (user, mediaType) => {
                 if (mediaType === "video") {
                     const playerContainer = document.getElementById("player-" + user.uid);
@@ -82,37 +105,155 @@
             rtc.localVideoTrack.play("local-player");
             await rtc.client.publish([rtc.localAudioTrack, rtc.localVideoTrack]);
             
-            document.getElementById("join-btn").innerText = "أنت متصل الآن ✅";
+            document.getElementById("join-btn").innerText = "أنت متصل بالبث الآن ✅";
         }
 
-        // كود السبورة
+        // --- 2. كود السبورة المتزامنة لايف 100% (MQTT Real-time Sync) ---
         const canvas = document.getElementById('paintCanvas');
         const ctx = canvas.getContext('2d');
-        let drawing = false;
+        const whiteboardTopic = "eduplatform_pro_room_main_whiteboard_v1";
 
-        canvas.addEventListener('mousedown', () => drawing = true);
-        canvas.addEventListener('mouseup', () => drawing = false);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('touchstart', () => drawing = true);
-        canvas.addEventListener('touchend', () => drawing = false);
-        canvas.addEventListener('touchmove', (e) => {
-            const touch = e.touches[0];
-            const rect = canvas.getBoundingClientRect();
-            draw({ clientX: touch.clientX - rect.left, clientY: touch.clientY - rect.top });
+        let drawing = false;
+        let currentColor = "#000000";
+        let currentLineWidth = 3;
+        let lastPos = { x: 0, y: 0 };
+        const myClientId = "user_" + Math.random().toString(36).substr(2, 9);
+
+        // الاتصال بالسيرفر التفاعلي المباشر
+        const mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt', { clientId: myClientId });
+
+        mqttClient.on('connect', () => {
+            const statusBadge = document.getElementById('whiteboard-status');
+            statusBadge.innerText = "السبورة متصلة لايف ✅ (متزامنة للجميع)";
+            statusBadge.className = "status-badge online";
+            mqttClient.subscribe(whiteboardTopic);
         });
+
+        mqttClient.on('offline', () => {
+            const statusBadge = document.getElementById('whiteboard-status');
+            statusBadge.innerText = "السبورة غير متصلة ❌";
+            statusBadge.className = "status-badge offline";
+        });
+
+        mqttClient.on('message', (topic, message) => {
+            if (topic !== whiteboardTopic) return;
+            try {
+                const data = JSON.parse(message.toString());
+                if (data.sender === myClientId) return; // عدم تكرار ما ترسمه أنت
+
+                if (data.type === 'draw') {
+                    drawRemoteLine(
+                        data.x0 * canvas.width,
+                        data.y0 * canvas.height,
+                        data.x1 * canvas.width,
+                        data.y1 * canvas.height,
+                        data.color,
+                        data.size
+                    );
+                } else if (data.type === 'clear') {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            } catch (e) {
+                console.error("Error handling whiteboard message", e);
+            }
+        });
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
+
+        function startDrawing(e) {
+            e.preventDefault();
+            drawing = true;
+            lastPos = getPos(e);
+        }
+
+        function stopDrawing(e) {
+            if (e) e.preventDefault();
+            drawing = false;
+        }
 
         function draw(e) {
             if (!drawing) return;
-            ctx.lineWidth = 3;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = '#007bff';
-            const x = e.clientX || e.clientX === 0 ? e.clientX - canvas.getBoundingClientRect().left : e.clientX;
-            const y = e.clientY || e.clientY === 0 ? e.clientY - canvas.getBoundingClientRect().top : e.clientY;
-            ctx.lineTo(x, y);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x, y);
+            e.preventDefault();
+            const currentPos = getPos(e);
+
+            // رسم الخط على الشاشة المحلية
+            drawLocalLine(lastPos.x, lastPos.y, currentPos.x, currentPos.y, currentColor, currentLineWidth);
+
+            // إرسال البيانات فوراً لكل الأجهزة المتصلة
+            if (mqttClient.connected) {
+                mqttClient.publish(whiteboardTopic, JSON.stringify({
+                    type: 'draw',
+                    sender: myClientId,
+                    x0: lastPos.x / canvas.width,
+                    y0: lastPos.y / canvas.height,
+                    x1: currentPos.x / canvas.width,
+                    y1: currentPos.y / canvas.height,
+                    color: currentColor,
+                    size: currentLineWidth
+                }));
+            }
+
+            lastPos = currentPos;
         }
+
+        function drawLocalLine(x0, y0, x1, y1, color, size) {
+            ctx.beginPath();
+            ctx.moveTo(x0, y0);
+            ctx.lineTo(x1, y1);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = size;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+            ctx.closePath();
+        }
+
+        function drawRemoteLine(x0, y0, x1, y1, color, size) {
+            drawLocalLine(x0, y0, x1, y1, color, size);
+        }
+
+        function sendClearBoard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (mqttClient.connected) {
+                mqttClient.publish(whiteboardTopic, JSON.stringify({
+                    type: 'clear',
+                    sender: myClientId
+                }));
+            }
+        }
+
+        function setColor(color, element) {
+            currentColor = color;
+            currentLineWidth = 3;
+            document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('active'));
+            if(element) element.classList.add('active');
+        }
+
+        function setEraser() {
+            currentColor = "#ffffff";
+            currentLineWidth = 20;
+            document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('active'));
+        }
+
+        // أحداث اللمس والماوس
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseleave', stopDrawing);
+        canvas.addEventListener('mousemove', draw);
+
+        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('touchend', stopDrawing);
+        canvas.addEventListener('touchcancel', stopDrawing);
+        canvas.addEventListener('touchmove', draw);
     </script>
 </body>
 </html>
