@@ -12,9 +12,14 @@
         h2 { margin: 5px 0; color: #38bdf8; font-size: 18px; }
         p.desc { color: #94a3b8; font-size: 13px; margin: 0 0 10px 0; }
         
-        /* إطار الفيديو جوه الصفحة (مستقر ومجاني بدون حدود) */
+        /* إطار الفيديو جوه الصفحة */
         .video-container { width: 100%; height: 380px; border-radius: 8px; overflow: hidden; border: 2px solid #22c55e; background: #000; }
         iframe { width: 100%; height: 100%; border: none; }
+        
+        /* أزرار التحكم في المكالمة */
+        .call-controls { margin-top: 10px; display: flex; justify-content: center; gap: 10px; }
+        .btn-end { background: #ef4444; color: white; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; box-shadow: 0 2px 8px rgba(239,68,68,0.4); }
+        .btn-end:hover { background: #dc2626; }
 
         /* السبورة التفاعلية تحت الفيديو مباشرة */
         .toolbar { margin: 8px 0; display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -30,14 +35,17 @@
 </head>
 <body>
     <div class="container">
-        <h2>📚 منصة المذاكرة الجماعية (فيديو VDO.ninja + سبورة حية)</h2>
-        <p class="desc">المكالمة شغالّة جوه الصفحة بدون أي قطع أو وقت محدد، والسبورة تحتها مباشرة.</p>
+        <h2>📚 منصة المذاكرة الجماعية (فيديو + سبورة حية)</h2>
+        <p class="desc">المكالمة شغالّة جوه الصفحة، ومعاك زرار مخصص لإنهاء المكالمة وقفل الكاميرا في أي وقت.</p>
 
-        <!-- مكالمة الفيديو الجماعية عبر VDO.ninja (بدون قيود وبداخل إطار المنصة) -->
+        <!-- مكالمة الفيديو الجماعية عبر VDO.ninja -->
         <div class="card">
             <h3>🎥 غرفة مكالمة الفيديو الجماعية</h3>
             <div class="video-container">
-                <iframe src="https://vdo.ninja/?room=EduPlatformPro_StudyRoom_2026&cleanoutput" allow="camera; microphone; fullscreen; display-capture; autoplay;"></iframe>
+                <iframe id="vdo-iframe" src="https://vdo.ninja/?room=EduPlatformPro_StudyRoom_2026&cleanoutput" allow="camera; microphone; fullscreen; display-capture; autoplay;"></iframe>
+            </div>
+            <div class="call-controls">
+                <button class="btn-end" onclick="endCall()">🔴 إنهاء المكالمة / خروج</button>
             </div>
         </div>
 
@@ -62,6 +70,11 @@
     </div>
 
     <script>
+        function endCall() {
+            const iframe = document.getElementById('vdo-iframe');
+            iframe.src = iframe.src; // يعمل إعادة تحميل فورية للإطار تفصل الكاميرا والمايك تماماً
+        }
+
         const userId = "user_" + Math.floor(Math.random() * 100000);
         const canvas = document.getElementById('paintCanvas');
         const ctx = canvas.getContext('2d');
@@ -150,7 +163,7 @@
             lastX = pos.x; lastY = pos.y;
         });
 
-        function drawLine(x0, y0, x1, y1, col, size) {
+        fnction drawLine(x0, y0, x1, y1, col, size) {
             ctx.beginPath();
             ctx.moveTo(x0, y0);
             ctx.lineTo(x1, y1);
