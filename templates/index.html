@@ -4,21 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EduPlatform Pro • بث مباشر وسبورة حية</title>
-    <!-- Agora RTC SDK Official CDN -->
-    <script src="https://download.agora.io/sdk/web/AgoraRTC_N.js"></script>
-    <!-- MQTT SDK for Live Whiteboard Sync -->
+    <!-- ZEGOCloud UIKits SDK -->
+    <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
+    <!-- MQTT SDK -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #f4f6f9; margin: 0; padding: 15px; color: #333; }
+        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; background: #f4f6f9; margin: 0; padding: 15px; color: #333; }
         .card { background: white; padding: 15px; margin: 15px auto; max-width: 850px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        #video-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 15px; }
-        .video-box { width: 160px; height: 120px; background: #1a1a2e; border-radius: 8px; overflow: hidden; position: relative; border: 2px solid #007bff; }
-        .video-box span { position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.6); color: white; padding: 2px 6px; font-size: 11px; border-radius: 4px; z-index: 10; }
-        button { background: #007bff; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; margin: 5px; }
-        button:disabled { background: #6c757d; }
+        #zego-container { width: 100%; height: 480px; border-radius: 8px; overflow: hidden; margin-top: 10px; background: #1a1a2e; }
         .toolbar { margin: 10px 0; display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; }
         .color-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #ccc; cursor: pointer; display: inline-block; transition: transform 0.1s; }
         .color-btn.active { border: 3px solid #000; transform: scale(1.2); }
+        button { background: #007bff; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; margin: 5px; }
         canvas { border: 2px solid #007bff; border-radius: 8px; background: white; cursor: crosshair; touch-action: none; width: 100%; max-width: 700px; height: 350px; }
         .status-badge { display: inline-block; padding: 5px 12px; border-radius: 12px; font-size: 13px; font-weight: bold; margin-bottom: 10px; }
         .online { background: #e6f4ea; color: #137333; }
@@ -28,16 +25,11 @@
 <body>
     <h2>EduPlatform Pro • بث مباشر وسبورة تفاعلية 100%</h2>
 
-    <!-- قسم الفيديو -->
     <div class="card">
-        <h3>🎥 مكالمة الفيديو الجماعية</h3>
-        <button id="join-btn" onclick="joinChannel()">الانضمام للمكالمة الجماعية</button>
-        <div id="video-container">
-            <div id="local-player" class="video-box"><span>أنت</span></div>
-        </div>
+        <h3>🎥 مكالمة الفيديو الجماعية (ZEGOCloud)</h3>
+        <div id="zego-container"></div>
     </div>
 
-    <!-- قسم السبورة اللايف -->
     <div class="card">
         <h3>🖥️ السبورة التفاعلية الحية</h3>
         <div id="whiteboard-status" class="status-badge offline">جاري الربط بالسبورة اللايف...</div>
@@ -57,95 +49,33 @@
     </div>
 
     <script>
-        const appId = "2b0b7c5a99f247de8305750411dd1296";
-        const channel = "main-room";
-        const token = null;
-        let rtc = { client: null, localAudioTrack: null, localVideoTrack: null };
+        // --- ZEGOCloud Setup ---
+        const appID = 1294634819;
+        const serverSecret = "96f9f8b7db11e60a5ee0565700b609e8";
+        const roomID = "edu_main_room";
+        const userID = "user_" + Math.floor(Math.random() * 10000);
+        const userName = "مستخدم " + Math.floor(Math.random() * 100);
 
-        // نظام التحميل الاحتياطي للمكتبات
-        function loadAgoraSDK() {
-            return new Promise((resolve, reject) => {
-                if (typeof AgoraRTC !== 'undefined') return resolve();
-                const urls = [
-                    "https://download.agora.io/sdk/web/AgoraRTC_N.js",
-                    "https://cdn.jsdelivr.net/npm/agora-rtc-sdk-ng@4.22.0/AgoraRTC_N.js",
-                    "https://unpkg.com/agora-rtc-sdk-ng@4.22.0/AgoraRTC_N.js"
-                ];
-                let idx = 0;
-                function tryNext() {
-                    if (idx >= urls.length) return reject("تعذر تحميل مكتبة Agora من جميع المصادر");
-                    const s = document.createElement("script");
-                    s.src = urls[idx++];
-                    s.onload = () => resolve();
-                    s.onerror = () => tryNext();
-                    document.head.appendChild(s);
-                }
-                tryNext();
-            });
-        }
-
-        async function joinChannel() {
-            const btn = document.getElementById("join-btn");
-            btn.disabled = true;
-            btn.innerText = "جاري الاتصال...";
-
+        window.onload = function() {
             try {
-                await loadAgoraSDK();
-
-                rtc.client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-                
-                rtc.client.on("user-published", async (user, mediaType) => {
-                    await rtc.client.subscribe(user, mediaType);
-                    if (mediaType === "video") {
-                        let playerContainer = document.getElementById("player-" + user.uid);
-                        if (!playerContainer) {
-                            playerContainer = document.createElement("div");
-                            playerContainer.id = "player-" + user.uid;
-                            playerContainer.className = "video-box";
-                            playerContainer.innerHTML = `<span>صديق ${user.uid}</span>`;
-                            document.getElementById("video-container").appendChild(playerContainer);
-                        }
-                        user.videoTrack.play("player-" + user.uid);
-                    }
-                    if (mediaType === "audio") {
-                        user.audioTrack.play();
+                const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userID, userName);
+                const zp = ZegoUIKitPrebuilt.create(kitToken);
+                zp.joinRoom({
+                    container: document.getElementById("zego-container"),
+                    scenario: {
+                        mode: ZegoUIKitPrebuilt.GroupCall,
+                    },
+                    showPrejoinView: false,
+                    lowerLeftNotification: {
+                        showUserJoinAndLeave: true
                     }
                 });
-
-                rtc.client.on("user-unpublished", (user, mediaType) => {
-                    if (mediaType === "video") {
-                        const playerContainer = document.getElementById("player-" + user.uid);
-                        if (playerContainer) playerContainer.remove();
-                    }
-                });
-
-                rtc.client.on("user-left", (user) => {
-                    const playerContainer = document.getElementById("player-" + user.uid);
-                    if (playerContainer) playerContainer.remove();
-                });
-
-                await rtc.client.join(appId, channel, token, null);
-                
-                rtc.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-                rtc.localVideoTrack = await AgoraRTC.createCameraVideoTrack();
-                rtc.localVideoTrack.play("local-player");
-                await rtc.client.publish([rtc.localAudioTrack, rtc.localVideoTrack]);
-                
-                btn.innerText = "أنت متصل بالبث الآن ✅";
-            } catch (err) {
-                console.error("Agora Error:", err);
-                btn.disabled = false;
-                btn.innerText = "الانضمام للمكالمة الجماعية";
-                let msg = err.message || err;
-                if (msg.includes("PERMISSION_DENIED") || msg.includes("NotAllowedError")) {
-                    alert("⚠️ تم حظر الكاميرا أو المايك! يرجى الضغط على القفل 🔒 أعلى شريط العنوان وتفعيل السماح بالكاميرا والمايك.");
-                } else {
-                    alert("تنبيه المكالمة: " + msg);
-                }
+            } catch (e) {
+                console.error("Zego Error:", e);
             }
-        }
+        };
 
-        // كود السبورة المتزامنة
+        // --- Whiteboard MQTT Setup ---
         const canvas = document.getElementById('paintCanvas');
         const ctx = canvas.getContext('2d');
         const whiteboardTopic = "eduplatform_pro_room_main_whiteboard_v1";
@@ -154,7 +84,7 @@
         let currentColor = "#000000";
         let currentLineWidth = 3;
         let lastPos = { x: 0, y: 0 };
-        const myClientId = "user_" + Math.random().toString(36).substr(2, 9);
+        const myClientId = userID;
 
         const mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt', { clientId: myClientId });
 
