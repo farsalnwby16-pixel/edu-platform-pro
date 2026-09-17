@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EduPlatform Pro • بث مباشر وسبورة حية</title>
-    <!-- Agora RTC SDK -->
     <script src="https://download.agora.io/sdk/web/AgoraRTC_N-4.20.0.js"></script>
-    <!-- MQTT SDK for Live Whiteboard Sync -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
     <style>
         body { font-family: sans-serif; text-align: center; background: #f4f6f9; margin: 0; padding: 15px; color: #333; }
@@ -15,7 +13,7 @@
         .video-box { width: 160px; height: 120px; background: #1a1a2e; border-radius: 8px; overflow: hidden; position: relative; border: 2px solid #007bff; }
         .video-box span { position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.6); color: white; padding: 2px 6px; font-size: 11px; border-radius: 4px; z-index: 10; }
         button { background: #007bff; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; margin: 5px; }
-        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; }
         .toolbar { margin: 10px 0; display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; }
         .color-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #ccc; cursor: pointer; display: inline-block; transition: transform 0.1s; }
         .color-btn.active { border: 3px solid #000; transform: scale(1.2); }
@@ -28,18 +26,16 @@
 <body>
     <h2>EduPlatform Pro • بث مباشر وسبورة تفاعلية 100%</h2>
 
-    <!-- قسم الفيديو -->
     <div class="card">
-        <h3>🎥 مكالمة الفيديو الجماعية (تتسع للفريق كامل)</h3>
+        <h3>🎥 مكالمة الفيديو الجماعية</h3>
         <button id="join-btn" onclick="joinChannel()">الانضمام للمكالمة الجماعية</button>
         <div id="video-container">
             <div id="local-player" class="video-box"><span>أنت</span></div>
         </div>
     </div>
 
-    <!-- قسم السبورة اللايف -->
     <div class="card">
-        <h3>🖥️ السبورة التفاعلية الحية (Real-Time Whiteboard)</h3>
+        <h3>🖥️ السبورة التفاعلية الحية</h3>
         <div id="whiteboard-status" class="status-badge offline">جاري الربط بالسبورة اللايف...</div>
         
         <div class="toolbar">
@@ -57,58 +53,65 @@
     </div>
 
     <script>
-        // --- 1. كود مكالمة الفيديو (Agora RTC) ---
         const appId = "2b0b7c5a99f247de8305750411dd1296";
         const channel = "main-room";
         const token = null;
         let rtc = { client: null, localAudioTrack: null, localVideoTrack: null };
 
         async function joinChannel() {
-            document.getElementById("join-btn").disabled = true;
-            document.getElementById("join-btn").innerText = "جاري الاتصال...";
+            const btn = document.getElementById("join-btn");
+            btn.disabled = true;
+            btn.innerText = "جاري الاتصال...";
 
-            rtc.client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-            
-            rtc.client.on("user-published", async (user, mediaType) => {
-                await rtc.client.subscribe(user, mediaType);
-                if (mediaType === "video") {
-                    let playerContainer = document.getElementById("player-" + user.uid);
-                    if (!playerContainer) {
-                        playerContainer = document.createElement("div");
-                        playerContainer.id = "player-" + user.uid;
-                        playerContainer.className = "video-box";
-                        playerContainer.innerHTML = `<span>صديق ${user.uid}</span>`;
-                        document.getElementById("video-container").appendChild(playerContainer);
+            try {
+                rtc.client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+                
+                rtc.client.on("user-published", async (user, mediaType) => {
+                    await rtc.client.subscribe(user, mediaType);
+                    if (mediaType === "video") {
+                        let playerContainer = document.getElementById("player-" + user.uid);
+                        if (!playerContainer) {
+                            playerContainer = document.createElement("div");
+                            playerContainer.id = "player-" + user.uid;
+                            playerContainer.className = "video-box";
+                            playerContainer.innerHTML = `<span>صديق ${user.uid}</span>`;
+                            document.getElementById("video-container").appendChild(playerContainer);
+                        }
+                        user.videoTrack.play("player-" + user.uid);
                     }
-                    user.videoTrack.play("player-" + user.uid);
-                }
-                if (mediaType === "audio") {
-                    user.audioTrack.play();
-                }
-            });
+                    if (mediaType === "audio") {
+                        user.audioTrack.play();
+                    }
+                });
 
-            rtc.client.on("user-unpublished", (user, mediaType) => {
-                if (mediaType === "video") {
+                rtc.client.on("user-unpublished", (user, mediaType) => {
+                    if (mediaType === "video") {
+                        const playerContainer = document.getElementById("player-" + user.uid);
+                        if (playerContainer) playerContainer.remove();
+                    }
+                });
+
+                rtc.client.on("user-left", (user) => {
                     const playerContainer = document.getElementById("player-" + user.uid);
                     if (playerContainer) playerContainer.remove();
-                }
-            });
+                });
 
-            rtc.client.on("user-left", (user) => {
-                const playerContainer = document.getElementById("player-" + user.uid);
-                if (playerContainer) playerContainer.remove();
-            });
-
-            await rtc.client.join(appId, channel, token, null);
-            rtc.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-            rtc.localVideoTrack = await AgoraRTC.createCameraVideoTrack();
-            rtc.localVideoTrack.play("local-player");
-            await rtc.client.publish([rtc.localAudioTrack, rtc.localVideoTrack]);
-            
-            document.getElementById("join-btn").innerText = "أنت متصل بالبث الآن ✅";
+                await rtc.client.join(appId, channel, token, null);
+                rtc.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+                rtc.localVideoTrack = await AgoraRTC.createCameraVideoTrack();
+                rtc.localVideoTrack.play("local-player");
+                await rtc.client.publish([rtc.localAudioTrack, rtc.localVideoTrack]);
+                
+                btn.innerText = "أنت متصل بالبث الآن ✅";
+            } catch (err) {
+                console.error("Agora Error:", err);
+                btn.disabled = false;
+                btn.innerText = "الانضمام للمكالمة الجماعية";
+                alert("تعذر فتح الكاميرا/المكالمة: " + (err.message || err));
+            }
         }
 
-        // --- 2. كود السبورة المتزامنة لايف 100% (MQTT Real-time Sync) ---
+        // كود السبورة
         const canvas = document.getElementById('paintCanvas');
         const ctx = canvas.getContext('2d');
         const whiteboardTopic = "eduplatform_pro_room_main_whiteboard_v1";
@@ -119,7 +122,6 @@
         let lastPos = { x: 0, y: 0 };
         const myClientId = "user_" + Math.random().toString(36).substr(2, 9);
 
-        // الاتصال بالسيرفر التفاعلي المباشر
         const mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt', { clientId: myClientId });
 
         mqttClient.on('connect', () => {
@@ -139,23 +141,14 @@
             if (topic !== whiteboardTopic) return;
             try {
                 const data = JSON.parse(message.toString());
-                if (data.sender === myClientId) return; // عدم تكرار ما ترسمه أنت
+                if (data.sender === myClientId) return;
 
                 if (data.type === 'draw') {
-                    drawRemoteLine(
-                        data.x0 * canvas.width,
-                        data.y0 * canvas.height,
-                        data.x1 * canvas.width,
-                        data.y1 * canvas.height,
-                        data.color,
-                        data.size
-                    );
+                    drawRemoteLine(data.x0 * canvas.width, data.y0 * canvas.height, data.x1 * canvas.width, data.y1 * canvas.height, data.color, data.size);
                 } else if (data.type === 'clear') {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                 }
-            } catch (e) {
-                console.error("Error handling whiteboard message", e);
-            }
+            } catch (e) {}
         });
 
         function getPos(e) {
@@ -164,92 +157,57 @@
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
-            return {
-                x: (clientX - rect.left) * scaleX,
-                y: (clientY - rect.top) * scaleY
-            };
+            return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
         }
 
-        function startDrawing(e) {
-            e.preventDefault();
-            drawing = true;
-            lastPos = getPos(e);
-        }
-
-        function stopDrawing(e) {
-            if (e) e.preventDefault();
-            drawing = false;
-        }
-
+        function startDrawing(e) { e.preventDefault(); drawing = true; lastPos = getPos(e); }
+        function stopDrawing(e) { if (e) e.preventDefault(); drawing = false; }
         function draw(e) {
             if (!drawing) return;
             e.preventDefault();
             const currentPos = getPos(e);
-
-            // رسم الخط على الشاشة المحلية
             drawLocalLine(lastPos.x, lastPos.y, currentPos.x, currentPos.y, currentColor, currentLineWidth);
 
-            // إرسال البيانات فوراً لكل الأجهزة المتصلة
             if (mqttClient.connected) {
                 mqttClient.publish(whiteboardTopic, JSON.stringify({
-                    type: 'draw',
-                    sender: myClientId,
-                    x0: lastPos.x / canvas.width,
-                    y0: lastPos.y / canvas.height,
-                    x1: currentPos.x / canvas.width,
-                    y1: currentPos.y / canvas.height,
-                    color: currentColor,
-                    size: currentLineWidth
+                    type: 'draw', sender: myClientId,
+                    x0: lastPos.x / canvas.width, y0: lastPos.y / canvas.height,
+                    x1: currentPos.x / canvas.width, y1: currentPos.y / canvas.height,
+                    color: currentColor, size: currentLineWidth
                 }));
             }
-
             lastPos = currentPos;
         }
 
         function drawLocalLine(x0, y0, x1, y1, color, size) {
-            ctx.beginPath();
-            ctx.moveTo(x0, y0);
-            ctx.lineTo(x1, y1);
-            ctx.strokeStyle = color;
-            ctx.lineWidth = size;
-            ctx.lineCap = 'round';
-            ctx.stroke();
-            ctx.closePath();
+            ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1);
+            ctx.strokeStyle = color; ctx.lineWidth = size; ctx.lineCap = 'round';
+            ctx.stroke(); ctx.closePath();
         }
-
-        function drawRemoteLine(x0, y0, x1, y1, color, size) {
-            drawLocalLine(x0, y0, x1, y1, color, size);
-        }
+        function drawRemoteLine(x0, y0, x1, y1, color, size) { drawLocalLine(x0, y0, x1, y1, color, size); }
 
         function sendClearBoard() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             if (mqttClient.connected) {
-                mqttClient.publish(whiteboardTopic, JSON.stringify({
-                    type: 'clear',
-                    sender: myClientId
-                }));
+                mqttClient.publish(whiteboardTopic, JSON.stringify({ type: 'clear', sender: myClientId }));
             }
         }
 
         function setColor(color, element) {
-            currentColor = color;
-            currentLineWidth = 3;
+            currentColor = color; currentLineWidth = 3;
             document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('active'));
             if(element) element.classList.add('active');
         }
 
         function setEraser() {
-            currentColor = "#ffffff";
-            currentLineWidth = 20;
+            currentColor = "#ffffff"; currentLineWidth = 20;
             document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('active'));
         }
 
-        // أحداث اللمس والماوس
         canvas.addEventListener('mousedown', startDrawing);
         canvas.addEventListener('mouseup', stopDrawing);
         canvas.addEventListener('mouseleave', stopDrawing);
         canvas.addEventListener('mousemove', draw);
-
         canvas.addEventListener('touchstart', startDrawing);
         canvas.addEventListener('touchend', stopDrawing);
         canvas.addEventListener('touchcancel', stopDrawing);
