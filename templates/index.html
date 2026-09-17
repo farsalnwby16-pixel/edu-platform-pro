@@ -36,13 +36,13 @@
 <body>
     <div class="container">
         <h2>📚 منصة المذاكرة الجماعية (فيديو + سبورة حية)</h2>
-        <p class="desc">تم إصلاح جميع الأخطاء وتفعيل السبورة وزر إنهاء المكالمة بالكامل.</p>
+        <p class="desc">تم إظهار أزرار التحكم الكاملة (المايك، الصوت، الكاميرا) داخل إطار الفيديو مباشرة.</p>
 
-        <!-- مكالمة الفيديو الجماعية عبر VDO.ninja -->
+        <!-- مكالمة الفيديو الجماعية عبر VDO.ninja (بدون cleanoutput لتظهر الأزرار) -->
         <div class="card">
             <h3>🎥 غرفة مكالمة الفيديو الجماعية</h3>
             <div class="video-container">
-                <iframe id="vdo-iframe" src="https://vdo.ninja/?room=EduPlatformPro_StudyRoom_2026&cleanoutput" allow="camera; microphone; fullscreen; display-capture; autoplay;"></iframe>
+                <iframe id="vdo-iframe" src="https://vdo.ninja/?room=EduPlatformPro_StudyRoom_2026" allow="camera; microphone; fullscreen; display-capture; autoplay;"></iframe>
             </div>
             <div class="call-controls">
                 <button class="btn-end" onclick="endCall()">🔴 إنهاء المكالمة / خروج</button>
