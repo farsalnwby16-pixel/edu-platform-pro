@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة المذاكرة الجماعية (فيديو + سبورة متطورة)</title>
+    <title>منصة المذاكرة الجماعية (فيديو + سبورة جداول متقدمة)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
@@ -58,7 +58,7 @@
 
                     <!-- قائمة اختيار نوع الجدول -->
                     <select id="tableType" class="bg-indigo-950 border border-indigo-800 text-indigo-200 rounded-lg px-2.5 py-1 text-xs font-bold outline-none">
-                        <option value="accounting">📊 جدول محاسبي (عمودين رئيسيين)</option>
+                        <option value="accounting">📊 جدول محاسبي (مدين، دائن، بيان)</option>
                         <option value="wide">📐 جدول عريض (متعدد الأعمدة)</option>
                         <option value="long">📜 جدول طويل (كشف درجات / قيود)</option>
                         <option value="math">📉 شبكة بيانية رياضية (س/ص)</option>
@@ -95,7 +95,7 @@
                 if (data.type === 'draw') {
                     drawOnCanvas(data.x0, data.y0, data.x1, data.y1, data.color, data.size, false);
                 } else if (data.type === 'table') {
-                    renderTablePreset(data.tableConfig, false);
+                    renderTablePreset(data.cols, data.rows, data.colW, data.rowH, false);
                 } else if (data.type === 'clear') {
                     const canvas = document.getElementById('whiteboard');
                     const ctx = canvas.getContext('2d');
@@ -123,61 +123,53 @@
 
         function insertSelectedTable() {
             const type = document.getElementById('tableType').value;
-            let config = {};
-            const startX = 40;
-            const startY = 40;
+            let cols = 4, rows = 6, colW = 80, rowH = 35;
 
             if (type === 'accounting') {
-                // جدول محاسبي: مدين / دائن / البيان
-                config = { startX, startY, cols: 3, rows: 8, colWidths: [220, 100, 100], rowHeight: 30 };
+                cols = 3; rows = 8; colW = 120; rowH = 35;
             } else if (type === 'wide') {
-                // جدول عريض متعدد الأعمدة
-                config = { startX, startY, cols: 6, rows: 6, colWidths: [80, 120, 100, 100, 100, 100], rowHeight: 35 };
+                cols = 6; rows = 6; colW = 75; rowH = 35;
             } else if (type === 'long') {
-                // جدول طويل للكشوفات
-                config = { startX, startY, cols: 4, rows: 14, colWidths: [50, 180, 100, 100], rowHeight: 25 };
+                cols = 4; rows = 12; colW = 90; rowH = 28;
             } else if (type === 'math') {
-                // شبكة بيانية رياضية
-                config = { startX, startY, cols: 10, rows: 10, colWidths: Array(10).fill(40), rowHeight: 40 };
+                cols = 8; rows = 8; colW = 45; rowH = 45;
             }
 
-            renderTablePreset(config, true);
+            renderTablePreset(cols, rows, colW, rowH, true);
         }
 
-        function renderTablePreset(cfg, broadcast) {
-            ctx.strokeStyle = '#334155';
+        function renderTablePreset(cols, rows, colW, rowH, broadcast) {
+            ctx.strokeStyle = '#1e293b';
             ctx.lineWidth = 1.5;
 
-            let currentX = cfg.startX;
-            let currentY = cfg.startY;
+            const startX = 30;
+            const startY = 30;
+            const totalWidth = cols * colW;
+            const totalHeight = rows * rowH;
 
-            let totalWidth = cfg.colWidths.reduce((a, b) => a + b, 0);
-            let totalHeight = cfg.rows * cfg.rowHeight;
-
-            // رسم الصفوف الأفقيّة
-            for (let i = 0; i <= cfg.rows; i++) {
+            // رسم الخطوط الأفقية
+            for (let i = 0; i <= rows; i++) {
                 ctx.beginPath();
-                ctx.moveTo(cfg.startX, cfg.startY + (i * cfg.rowHeight));
-                ctx.lineTo(cfg.startX + totalWidth, cfg.startY + (i * cfg.rowHeight));
+                ctx.moveTo(startX, startY + (i * rowH));
+                ctx.lineTo(startX + totalWidth, startY + (i * rowH));
                 ctx.stroke();
             }
 
-            // رسم الأعمدة الرأسيّة بمقاسات مخصصة
-            let xAcc = cfg.startX;
-            for (let j = 0; j <= cfg.cols; j++) {
+            // رسم الخطوط العمودية
+            for (let j = 0; j <= cols; j++) {
                 ctx.beginPath();
-                ctx.moveTo(xAcc, cfg.startY);
-                ctx.lineTo(xAcc, cfg.startY + totalHeight);
+                ctx.moveTo(startX + (j * colW), startY);
+                ctx.lineTo(startX + (j * colW), startY + totalHeight);
                 ctx.stroke();
-                if (j < cfg.cols) {
-                    xAcc += cfg.colWidths[j];
-                }
             }
 
             if (broadcast) {
                 client.publish(mqttTopic, JSON.stringify({
                     type: 'table',
-                    tableConfig: cfg
+                    cols: cols,
+                    rows: rows,
+                    colW: colW,
+                    rowH: rowH
                 }));
             }
         }
@@ -216,9 +208,6 @@
             ctx.strokeStyle = color; ctx.lineWidth = size; ctx.lineCap = 'round';
             ctx.stroke(); ctx.closePath();
 
-            if, (broadcast) { // syntax fix handled smoothly
-                // handled inside
-            }
             if (broadcast) {
                 client.publish(mqttTopic, JSON.stringify({ type: 'draw', x0, y0, x1, y1, color, size }));
             }
