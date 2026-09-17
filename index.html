@@ -9,9 +9,9 @@
     <!-- MQTT SDK -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
     <style>
-        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; background: #f4f6f9; margin: 0; padding: 15px; color: #333; }
+        body { font-family: system-ui, -apple-system, sans-serif; text-align: center; background: #f4f6f9; margin: 0; padding: 15px; color: #333; }
         .card { background: white; padding: 15px; margin: 15px auto; max-width: 850px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        #zego-container { width: 100%; height: 480px; border-radius: 8px; overflow: hidden; margin-top: 10px; background: #1a1a2e; }
+        #zego-container { width: 100%; height: 500px; border-radius: 8px; overflow: hidden; margin-top: 10px; background: #1a1a2e; }
         .toolbar { margin: 10px 0; display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; }
         .color-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #ccc; cursor: pointer; display: inline-block; transition: transform 0.1s; }
         .color-btn.active { border: 3px solid #000; transform: scale(1.2); }
@@ -20,13 +20,15 @@
         .status-badge { display: inline-block; padding: 5px 12px; border-radius: 12px; font-size: 13px; font-weight: bold; margin-bottom: 10px; }
         .online { background: #e6f4ea; color: #137333; }
         .offline { background: #fce8e6; color: #c5221f; }
+        #start-call-btn { font-size: 18px; padding: 12px 25px; background: #28a745; color: white; border-radius: 8px; margin-bottom: 10px; width: 100%; max-width: 300px; }
     </style>
 </head>
 <body>
     <h2>EduPlatform Pro • بث مباشر وسبورة تفاعلية 100%</h2>
 
     <div class="card">
-        <h3>🎥 مكالمة الفيديو الجماعية (ZEGOCloud)</h3>
+        <h3>🎥 مكالمة الفيديو الجماعية</h3>
+        <button id="start-call-btn" onclick="initZego()">📞 دخول المكالمة الجماعية</button>
         <div id="zego-container"></div>
     </div>
 
@@ -49,14 +51,16 @@
     </div>
 
     <script>
-        // --- ZEGOCloud Setup ---
         const appID = 1294634819;
         const serverSecret = "96f9f8b7db11e60a5ee0565700b609e8";
         const roomID = "edu_main_room";
         const userID = "user_" + Math.floor(Math.random() * 10000);
         const userName = "مستخدم " + Math.floor(Math.random() * 100);
 
-        window.onload = function() {
+        function initZego() {
+            const btn = document.getElementById("start-call-btn");
+            btn.style.display = "none";
+
             try {
                 const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userID, userName);
                 const zp = ZegoUIKitPrebuilt.create(kitToken);
@@ -65,15 +69,22 @@
                     scenario: {
                         mode: ZegoUIKitPrebuilt.GroupCall,
                     },
-                    showPrejoinView: false,
-                    lowerLeftNotification: {
-                        showUserJoinAndLeave: true
-                    }
+                    showPrejoinView: true,
+                    prejoinViewConfig: {
+                        title: "إعدادات الانضمام للمكالمة"
+                    },
+                    showMyCameraToggleButton: true,
+                    showMyMicrophoneToggleButton: true,
+                    showAudioVideoSettingsButton: true,
+                    showUserList: true,
+                    maxUsers: 50,
+                    layout: "Auto"
                 });
             } catch (e) {
-                console.error("Zego Error:", e);
+                alert("حدث خطأ أثناء الاتصال: " + e.message);
+                btn.style.display = "inline-block";
             }
-        };
+        }
 
         // --- Whiteboard MQTT Setup ---
         const canvas = document.getElementById('paintCanvas');
