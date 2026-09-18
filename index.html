@@ -18,31 +18,31 @@
 
     <!-- رأس الصفحة -->
     <header class="bg-slate-900 border-b border-slate-800 px-4 py-2 flex justify-between items-center shrink-0">
-        <h1 class="font-bold text-sm text-slate-200">📚 منصة الفارس التعليمية (فيديو + سبورة جداول متقدمة)</h1>
-        <span id="room-status" class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">متصل بالسيرفر</span>
+        <h1 class="font-bold text-sm text-slate-200">📚 منصة الفارس التعليمية</h1>
+        <span id="room-status" class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">جاري الاتصال...</span>
     </header>
 
     <!-- المحتوى الرئيسي -->
     <div class="flex-1 flex flex-col p-2 gap-2 overflow-y-auto">
 
-        <!-- إطار المكالمات (آمن تماماً ولم يُلمس) -->
+        <!-- إطار المكالمات مع دعم شبكات المحمول (الداتا) -->
         <div class="w-full h-72 md:h-80 bg-slate-950 rounded-xl border border-slate-800 overflow-hidden shrink-0">
-            <iframe src="https://vdo.ninja/?room=EduPlatformPro_StudyRoom_2026" class="w-full h-full border-0" allow="camera;microphone;fullscreen;display-capture"></iframe>
+            <iframe src="https://vdo.ninja/?room=AlfaarisEduPlatform2026_RoomPrivate&push&mesh&stun" class="w-full h-full border-0" allow="camera;microphone;fullscreen;display-capture"></iframe>
         </div>
 
-        <!-- قسم السبورة وأدوات الجداول المحاسبية والرياضية -->
+        <!-- قسم السبورة وأدوات الجداول -->
         <div class="flex-1 flex flex-col bg-slate-900 rounded-xl border border-slate-800 p-2 min-h-[480px]">
             <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-800 text-xs">
-                <span class="font-bold text-slate-300">🎨 السبورة التفاعلية (جداول محاسبية ورياضية متقدمة)</span>
+                <span class="font-bold text-slate-300">🎨 السبورة التفاعلية</span>
                 
                 <div class="flex flex-wrap items-center gap-2">
                     <!-- الألوان -->
                     <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
-                        <button onclick="setColor('#ef4444')" class="w-5 h-5 rounded-full bg-red-500 hover:scale-110 transition" title="أحمر"></button>
-                        <button onclick="setColor('#22c55e')" class="w-5 h-5 rounded-full bg-green-500 hover:scale-110 transition" title="أخضر"></button>
-                        <button onclick="setColor('#3b82f6')" class="w-5 h-5 rounded-full bg-blue-500 hover:scale-110 transition" title="أزرق"></button>
-                        <button onclick="setColor('#eab308')" class="w-5 h-5 rounded-full bg-yellow-500 hover:scale-110 transition" title="أصفر"></button>
-                        <button onclick="setColor('#ffffff')" class="w-5 h-5 rounded-full bg-white hover:scale-110 transition" title="أبيض"></button>
+                        <button onclick="setColor('#ef4444')" class="w-5 h-5 rounded-full bg-red-500 hover:scale-110 transition"></button>
+                        <button onclick="setColor('#22c55e')" class="w-5 h-5 rounded-full bg-green-500 hover:scale-110 transition"></button>
+                        <button onclick="setColor('#3b82f6')" class="w-5 h-5 rounded-full bg-blue-500 hover:scale-110 transition"></button>
+                        <button onclick="setColor('#eab308')" class="w-5 h-5 rounded-full bg-yellow-500 hover:scale-110 transition"></button>
+                        <button onclick="setColor('#ffffff')" class="w-5 h-5 rounded-full bg-white hover:scale-110 transition"></button>
                     </div>
 
                     <!-- مقاسات الخط -->
@@ -50,23 +50,19 @@
                         <option value="2">خط رفيع</option>
                         <option value="5" selected>خط متوسط</option>
                         <option value="12">خط تخين</option>
-                        <option value="20">خط عريض</option>
                     </select>
 
-                    <!-- ممحاة -->
                     <button onclick="enableEraser()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded-lg transition font-medium">🧹 ممحاة</button>
 
-                    <!-- قائمة اختيار نوع الجدول -->
+                    <!-- الجداول -->
                     <select id="tableType" class="bg-indigo-950 border border-indigo-800 text-indigo-200 rounded-lg px-2.5 py-1 text-xs font-bold outline-none">
-                        <option value="accounting">📊 جدول محاسبي (مدين، دائن، بيان)</option>
-                        <option value="wide">📐 جدول عريض (متعدد الأعمدة)</option>
-                        <option value="long">📜 جدول طويل (كشف درجات / قيود)</option>
-                        <option value="math">📉 شبكة بيانية رياضية (س/ص)</option>
+                        <option value="accounting">📊 جدول محاسبي</option>
+                        <option value="wide">📐 جدول عريض</option>
+                        <option value="long">📜 جدول طويل</option>
+                        <option value="math">📉 شبكة بيانية</option>
                     </select>
                     
                     <button onclick="insertSelectedTable()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1 rounded-lg transition font-bold shadow">إدراج الجدول</button>
-
-                    <!-- مسح الكل -->
                     <button onclick="clearCanvas(true)" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 px-2.5 py-1 rounded-lg transition font-medium">مسح الكل</button>
                 </div>
             </div>
@@ -79,9 +75,9 @@
 
     </div>
 
-    <!-- كود الجافاسكريبت للسبورة وتزامن الجداول -->
     <script>
-        const mqttTopic = "smart_classroom_room_2026_main";
+        // غرف خاصة جداً لمنع دخول أي شخبطة خارجية
+        const mqttTopic = "alfaris_edu_board_private_9988_xyz";
         const client = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
 
         client.on('connect', () => {
@@ -92,13 +88,15 @@
         client.on('message', (topic, payload) => {
             try {
                 const data = JSON.parse(payload.toString());
+                const w = canvas.width;
+                const h = canvas.height;
+
                 if (data.type === 'draw') {
-                    drawOnCanvas(data.x0, data.y0, data.x1, data.y1, data.color, data.size, false);
+                    // تحويل النسبة المئوية لإحداثيات حقيقية تناسب أي شاشة
+                    drawOnCanvas(data.x0 * w, data.y0 * h, data.x1 * w, data.y1 * h, data.color, data.size, false);
                 } else if (data.type === 'table') {
                     renderTablePreset(data.cols, data.rows, data.colW, data.rowH, false);
                 } else if (data.type === 'clear') {
-                    const canvas = document.getElementById('whiteboard');
-                    const ctx = canvas.getContext('2d');
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                 }
             } catch (e) { console.error(e); }
@@ -124,16 +122,10 @@
         function insertSelectedTable() {
             const type = document.getElementById('tableType').value;
             let cols = 4, rows = 6, colW = 80, rowH = 35;
-
-            if (type === 'accounting') {
-                cols = 3; rows = 8; colW = 120; rowH = 35;
-            } else if (type === 'wide') {
-                cols = 6; rows = 6; colW = 75; rowH = 35;
-            } else if (type === 'long') {
-                cols = 4; rows = 12; colW = 90; rowH = 28;
-            } else if (type === 'math') {
-                cols = 8; rows = 8; colW = 45; rowH = 45;
-            }
+            if (type === 'accounting') { cols = 3; rows = 8; colW = 120; rowH = 35; }
+            else if (type === 'wide') { cols = 6; rows = 6; colW = 75; rowH = 35; }
+            else if (type === 'long') { cols = 4; rows = 12; colW = 90; rowH = 28; }
+            else if (type === 'math') { cols = 8; rows = 8; colW = 45; rowH = 45; }
 
             renderTablePreset(cols, rows, colW, rowH, true);
         }
@@ -141,36 +133,20 @@
         function renderTablePreset(cols, rows, colW, rowH, broadcast) {
             ctx.strokeStyle = '#1e293b';
             ctx.lineWidth = 1.5;
+            const startX = 20, startY = 20;
+            const totalWidth = cols * colW, totalHeight = rows * rowH;
 
-            const startX = 30;
-            const startY = 30;
-            const totalWidth = cols * colW;
-            const totalHeight = rows * rowH;
-
-            // رسم الخطوط الأفقية
             for (let i = 0; i <= rows; i++) {
-                ctx.beginPath();
-                ctx.moveTo(startX, startY + (i * rowH));
-                ctx.lineTo(startX + totalWidth, startY + (i * rowH));
-                ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(startX, startY + (i * rowH));
+                ctx.lineTo(startX + totalWidth, startY + (i * rowH)); ctx.stroke();
             }
-
-            // رسم الخطوط العمودية
             for (let j = 0; j <= cols; j++) {
-                ctx.beginPath();
-                ctx.moveTo(startX + (j * colW), startY);
-                ctx.lineTo(startX + (j * colW), startY + totalHeight);
-                ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(startX + (j * colW), startY);
+                ctx.lineTo(startX + (j * colW), startY + totalHeight); ctx.stroke();
             }
 
             if (broadcast) {
-                client.publish(mqttTopic, JSON.stringify({
-                    type: 'table',
-                    cols: cols,
-                    rows: rows,
-                    colW: colW,
-                    rowH: rowH
-                }));
+                client.publish(mqttTopic, JSON.stringify({ type: 'table', cols, rows, colW, rowH }));
             }
         }
 
@@ -209,7 +185,15 @@
             ctx.stroke(); ctx.closePath();
 
             if (broadcast) {
-                client.publish(mqttTopic, JSON.stringify({ type: 'draw', x0, y0, x1, y1, color, size }));
+                const w = canvas.width;
+                const h = canvas.height;
+                // إرسال الإحداثيات كـ نسب مئوية لضمان التطابق بين جميع الأجهزة
+                client.publish(mqttTopic, JSON.stringify({
+                    type: 'draw',
+                    x0: x0 / w, y0: y0 / h,
+                    x1: x1 / w, y1: y1 / h,
+                    color, size
+                }));
             }
         }
 
