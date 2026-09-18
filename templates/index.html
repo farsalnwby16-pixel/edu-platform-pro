@@ -25,13 +25,13 @@
     <!-- رأس الصفحة -->
     <header class="bg-slate-900 border-b border-slate-800 px-4 py-2 flex justify-between items-center shrink-0">
         <h1 class="font-bold text-sm text-slate-200">📚 منصة الفارس التعليمية</h1>
-        <span id="room-status" class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">جاري الاتصال...</span>
+        <span id="room-status" class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">جاري الاتصال بالسيرفر...</span>
     </header>
 
     <!-- المحتوى الرئيسي -->
     <div class="flex-1 flex flex-col p-2 gap-2 overflow-y-auto">
 
-        <!-- إطار المكالمات باسم الغرفة الجديد FaresEduRoom2027 -->
+        <!-- إطار المكالمات -->
         <div class="w-full h-72 md:h-80 bg-slate-950 rounded-xl border border-slate-800 overflow-hidden shrink-0">
             <iframe src="https://vdo.ninja/?room=FaresEduRoom2027&push&mesh" class="w-full h-full border-0" allow="camera;microphone;fullscreen;display-capture"></iframe>
         </div>
@@ -39,7 +39,7 @@
         <!-- قسم السبورة وأدوات الجداول -->
         <div class="flex-1 flex flex-col bg-slate-900 rounded-xl border border-slate-800 p-2 min-h-[480px]">
             <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-800 text-xs">
-                <span class="font-bold text-slate-300">🎨 السبورة التفاعلية</span>
+                <span class="font-bold text-slate-300">🎨 السبورة التفاعلية (كتابة ناعمة وسريعة)</span>
                 
                 <div class="flex flex-wrap items-center gap-2">
                     <!-- الألوان -->
@@ -73,7 +73,7 @@
                 </div>
             </div>
 
-            <!-- مساحة الرسم -->
+            <!-- مساحة الرسم دقة 1200x800 موحدة -->
             <div class="flex-1 canvas-container bg-white rounded-lg mt-2 relative overflow-hidden cursor-crosshair flex items-center justify-center">
                 <canvas id="whiteboard" width="1200" height="800" class="w-full h-full block bg-white object-contain"></canvas>
             </div>
@@ -88,8 +88,9 @@
             document.getElementById('webview-alert').classList.remove('hidden');
         }
 
-        const mqttTopic = "alfaris_edu_board_private_9988_xyz";
-        const client = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
+        const mqttTopic = "alfaris_edu_board_private_2027_v1";
+        // استخدام سيرفر HiveMQ المجاني عالي الأداء مع اتصالات WebSockets
+        const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
 
         client.on('connect', () => {
             document.getElementById('room-status').innerText = "متصل مباشر ✅";
@@ -99,11 +100,16 @@
         const canvas = document.getElementById('whiteboard');
         const ctx = canvas.getContext('2d');
 
+        // مخزن مؤقت لتجميع نقاط الرسم ومنع سقوط البيانات (Batching)
+        let drawBuffer = [];
+
         client.on('message', (topic, payload) => {
             try {
                 const data = JSON.parse(payload.toString());
-                if (data.type === 'draw') {
-                    drawOnCanvas(data.x0, data.y0, data.x1, data.y1, data.color, data.size, false);
+                if (data.type === 'draw_batch') {
+                    data.lines.forEach(line => {
+                        drawOnCanvas(line.x0, line.y0, line.x1, line.y1, line.color, line.size, false);
+                    });
                 } else if (data.type === 'table') {
                     renderTablePreset(data.cols, data.rows, data.colW, data.rowH, false);
                 } else if (data.type === 'clear') {
@@ -111,6 +117,17 @@
                 }
             } catch (e) { console.error(e); }
         });
+
+        // إرسال حزمة الخطوط المجمعة كل 30 ملي ثانية لتفادي التقطيع والشرط
+        setInterval(() => {
+            if (drawBuffer.length > 0 && client && client.connected) {
+                client.publish(mqttTopic, JSON.stringify({
+                    type: 'draw_batch',
+                    lines: drawBuffer
+                }));
+                drawBuffer = [];
+            }
+        }, 30);
 
         let drawing = false, lastX = 0, lastY = 0;
         let currentColor = '#3b82f6';
@@ -215,15 +232,14 @@
             ctx.closePath();
 
             if (broadcast) {
-                client.publish(mqttTopic, JSON.stringify({
-                    type: 'draw',
+                drawBuffer.push({
                     x0: Math.round(x0),
                     y0: Math.round(y0),
                     x1: Math.round(x1),
                     y1: Math.round(y1),
                     color,
                     size
-                }));
+                });
             }
         }
 
