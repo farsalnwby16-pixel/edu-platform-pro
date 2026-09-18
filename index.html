@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة الفارس التعليمية (فيديو + سبورة جداول متقدمة)</title>
+    <title>منصة الفارس التعليمية</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
@@ -12,9 +12,15 @@
         .canvas-container { touch-action: none; }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        canvas { touch-action: none; }
     </style>
 </head>
 <body class="h-screen w-screen flex flex-col overflow-x-hidden">
+
+    <!-- تنبيه متصفح ماسنجر -->
+    <div id="webview-alert" class="hidden bg-amber-500 text-slate-950 font-bold px-4 py-2 text-center text-xs border-b border-amber-600">
+        ⚠️ أنت تفتح المنصة من داخل تطبيق (ماسنجر/فيسبوك)! يرجى الضغط على (⋮) بالأعلى واختيار "فتح في Chrome" لكي تعمل الكاميرا.
+    </div>
 
     <!-- رأس الصفحة -->
     <header class="bg-slate-900 border-b border-slate-800 px-4 py-2 flex justify-between items-center shrink-0">
@@ -25,15 +31,15 @@
     <!-- المحتوى الرئيسي -->
     <div class="flex-1 flex flex-col p-2 gap-2 overflow-y-auto">
 
-        <!-- إطار المكالمات مع دعم شبكات المحمول (الداتا) -->
+        <!-- إطار المكالمات -->
         <div class="w-full h-72 md:h-80 bg-slate-950 rounded-xl border border-slate-800 overflow-hidden shrink-0">
-            <iframe src="https://vdo.ninja/?room=AlfaarisEduPlatform2026_RoomPrivate&push&mesh&stun" class="w-full h-full border-0" allow="camera;microphone;fullscreen;display-capture"></iframe>
+            <iframe src="https://vdo.ninja/?room=AlfaarisEduPlatform2026_RoomPrivate&push&mesh&stun&quality=2" class="w-full h-full border-0" allow="camera;microphone;fullscreen;display-capture"></iframe>
         </div>
 
         <!-- قسم السبورة وأدوات الجداول -->
         <div class="flex-1 flex flex-col bg-slate-900 rounded-xl border border-slate-800 p-2 min-h-[480px]">
             <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-800 text-xs">
-                <span class="font-bold text-slate-300">🎨 السبورة التفاعلية</span>
+                <span class="font-bold text-slate-300">🎨 السبورة التفاعلية (دقة موحدة)</span>
                 
                 <div class="flex flex-wrap items-center gap-2">
                     <!-- الألوان -->
@@ -47,8 +53,8 @@
 
                     <!-- مقاسات الخط -->
                     <select id="brushSize" class="bg-slate-950 border border-slate-800 text-slate-200 rounded-lg px-2 py-1 text-xs outline-none">
-                        <option value="2">خط رفيع</option>
-                        <option value="5" selected>خط متوسط</option>
+                        <option value="3">خط رفيع</option>
+                        <option value="6" selected>خط متوسط</option>
                         <option value="12">خط تخين</option>
                     </select>
 
@@ -67,16 +73,21 @@
                 </div>
             </div>
 
-            <!-- مساحة الرسم -->
-            <div class="flex-1 canvas-container bg-white rounded-lg mt-2 relative overflow-hidden cursor-crosshair">
-                <canvas id="whiteboard" class="w-full h-full block"></canvas>
+            <!-- مساحة الرسم دقة 1200x800 موحدة -->
+            <div class="flex-1 canvas-container bg-white rounded-lg mt-2 relative overflow-hidden cursor-crosshair flex items-center justify-center">
+                <canvas id="whiteboard" width="1200" height="800" class="w-full h-full block bg-white object-contain"></canvas>
             </div>
         </div>
 
     </div>
 
     <script>
-        // غرف خاصة جداً لمنع دخول أي شخبطة خارجية
+        // كشف متصفح ماسنجر/فيسبوك
+        const ua = navigator.userAgent || navigator.vendor || window.opera;
+        if (ua.indexOf("FBAN") > -1 || ua.indexOf("FBAV") > -1 || ua.indexOf("Messenger") > -1) {
+            document.getElementById('webview-alert').classList.remove('hidden');
+        }
+
         const mqttTopic = "alfaris_edu_board_private_9988_xyz";
         const client = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
 
@@ -85,15 +96,14 @@
             client.subscribe(mqttTopic);
         });
 
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+
         client.on('message', (topic, payload) => {
             try {
                 const data = JSON.parse(payload.toString());
-                const w = canvas.width;
-                const h = canvas.height;
-
                 if (data.type === 'draw') {
-                    // تحويل النسبة المئوية لإحداثيات حقيقية تناسب أي شاشة
-                    drawOnCanvas(data.x0 * w, data.y0 * h, data.x1 * w, data.y1 * h, data.color, data.size, false);
+                    drawOnCanvas(data.x0, data.y0, data.x1, data.y1, data.color, data.size, false);
                 } else if (data.type === 'table') {
                     renderTablePreset(data.cols, data.rows, data.colW, data.rowH, false);
                 } else if (data.type === 'clear') {
@@ -102,38 +112,48 @@
             } catch (e) { console.error(e); }
         });
 
-        const canvas = document.getElementById('whiteboard');
-        const ctx = canvas.getContext('2d');
-
-        function resizeCanvas() {
-            const rect = canvas.parentElement.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = rect.height;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
         let drawing = false, lastX = 0, lastY = 0;
         let currentColor = '#3b82f6';
 
         function setColor(color) { currentColor = color; }
         function enableEraser() { currentColor = '#ffffff'; }
 
+        // تحويل إحداثيات الشاشة إلى الدقة الثابتة 1200x800
+        function getCanvasCoordinates(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+
+            let clientX, clientY;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
+
         function insertSelectedTable() {
             const type = document.getElementById('tableType').value;
-            let cols = 4, rows = 6, colW = 80, rowH = 35;
-            if (type === 'accounting') { cols = 3; rows = 8; colW = 120; rowH = 35; }
-            else if (type === 'wide') { cols = 6; rows = 6; colW = 75; rowH = 35; }
-            else if (type === 'long') { cols = 4; rows = 12; colW = 90; rowH = 28; }
-            else if (type === 'math') { cols = 8; rows = 8; colW = 45; rowH = 45; }
+            let cols = 4, rows = 6, colW = 120, rowH = 55;
+            if (type === 'accounting') { cols = 3; rows = 8; colW = 180; rowH = 50; }
+            else if (type === 'wide') { cols = 6; rows = 6; colW = 110; rowH = 50; }
+            else if (type === 'long') { cols = 4; rows = 12; colW = 140; rowH = 40; }
+            else if (type === 'math') { cols = 8; rows = 8; colW = 70; rowH = 70; }
 
             renderTablePreset(cols, rows, colW, rowH, true);
         }
 
         function renderTablePreset(cols, rows, colW, rowH, broadcast) {
             ctx.strokeStyle = '#1e293b';
-            ctx.lineWidth = 1.5;
-            const startX = 20, startY = 20;
+            ctx.lineWidth = 2;
+            const startX = 40, startY = 40;
             const totalWidth = cols * colW, totalHeight = rows * rowH;
 
             for (let i = 0; i <= rows; i++) {
@@ -150,23 +170,29 @@
             }
         }
 
-        canvas.addEventListener('mousedown', (e) => startDraw(e.offsetX, e.offsetY));
-        canvas.addEventListener('mousemove', (e) => draw(e.offsetX, e.offsetY));
+        canvas.addEventListener('mousedown', (e) => {
+            const coords = getCanvasCoordinates(e);
+            startDraw(coords.x, coords.y);
+        });
+        canvas.addEventListener('mousemove', (e) => {
+            const coords = getCanvasCoordinates(e);
+            draw(coords.x, coords.y);
+        });
         canvas.addEventListener('mouseup', stopDraw);
         canvas.addEventListener('mouseleave', stopDraw);
 
         canvas.addEventListener('touchstart', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const touch = e.touches[0];
-            startDraw(touch.clientX - rect.left, touch.clientY - rect.top);
+            const coords = getCanvasCoordinates(e);
+            startDraw(coords.x, coords.y);
             e.preventDefault();
-        });
+        }, { passive: false });
+
         canvas.addEventListener('touchmove', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const touch = e.touches[0];
-            draw(touch.clientX - rect.left, touch.clientY - rect.top);
+            const coords = getCanvasCoordinates(e);
+            draw(coords.x, coords.y);
             e.preventDefault();
-        });
+        }, { passive: false });
+
         canvas.addEventListener('touchend', stopDraw);
 
         function startDraw(x, y) { drawing = true; lastX = x; lastY = y; }
@@ -180,19 +206,24 @@
 
         function drawOnCanvas(x0, y0, x1, y1, color, size, broadcast) {
             ctx.beginPath();
-            ctx.moveTo(x0, y0); ctx.lineTo(x1, y1);
-            ctx.strokeStyle = color; ctx.lineWidth = size; ctx.lineCap = 'round';
-            ctx.stroke(); ctx.closePath();
+            ctx.moveTo(x0, y0);
+            ctx.lineTo(x1, y1);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = size;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.stroke();
+            ctx.closePath();
 
             if (broadcast) {
-                const w = canvas.width;
-                const h = canvas.height;
-                // إرسال الإحداثيات كـ نسب مئوية لضمان التطابق بين جميع الأجهزة
                 client.publish(mqttTopic, JSON.stringify({
                     type: 'draw',
-                    x0: x0 / w, y0: y0 / h,
-                    x1: x1 / w, y1: y1 / h,
-                    color, size
+                    x0: Math.round(x0),
+                    y0: Math.round(y0),
+                    x1: Math.round(x1),
+                    y1: Math.round(y1),
+                    color,
+                    size
                 }));
             }
         }
