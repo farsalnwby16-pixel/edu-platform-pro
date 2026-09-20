@@ -1,10 +1,15 @@
 from flask import Flask, render_template, request, jsonify
-from flask_socketio import SocketIO
+try:
+    from flask_socketio import SocketIO
+    SOCKETIO_AVAILABLE = True
+except ImportError:
+    SocketIO = None
+    SOCKETIO_AVAILABLE = False
 from groq import Groq
 import os
 
 app = Flask(__name__)
-socketio = SocketIO(app)
+socketio = SocketIO(app) if SOCKETIO_AVAILABLE else None
 
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
