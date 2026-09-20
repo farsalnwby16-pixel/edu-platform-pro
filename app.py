@@ -1,6 +1,31 @@
+
+try:
+    from flask_socketio import SocketIO, emit, join_room, leave_room
+    SOCKETIO_AVAILABLE = True
+except (ImportError, ModuleNotFoundError):
+    SOCKETIO_AVAILABLE = False
+    class DummySocketIO:
+        def __init__(self, app=None, **kwargs):
+            pass
+        def on(self, event, *args, **kwargs):
+            def decorator(f):
+                return f
+            return decorator
+        def emit(self, *args, **kwargs):
+            pass
+        def run(self, app, *args, **kwargs):
+            app.run(*args, **kwargs)
+    SocketIO = DummySocketIO
+    def emit(*args, **kwargs):
+        pass
+    def join_room(*args, **kwargs):
+        pass
+    def leave_room(*args, **kwargs):
+        pass
+
 from flask import Flask, render_template, request, jsonify
 try:
-    from flask_socketio import SocketIO
+    
     SOCKETIO_AVAILABLE = True
 except ImportError:
     SocketIO = None
