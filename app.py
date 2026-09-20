@@ -1,6 +1,6 @@
 
 try:
-    from flask_socketio import SocketIO, emit, join_room, leave_room
+    
     SOCKETIO_AVAILABLE = True
 except (ImportError, ModuleNotFoundError):
     SOCKETIO_AVAILABLE = False
@@ -34,7 +34,7 @@ from groq import Groq
 import os
 
 app = Flask(__name__)
-socketio = SocketIO(app) if SOCKETIO_AVAILABLE else None
+ if SOCKETIO_AVAILABLE else None
 
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
@@ -55,4 +55,4 @@ def chat():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    socketio.run(app)
+    
