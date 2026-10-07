@@ -6,3 +6,5 @@ gunicorn
 psycopg2-binary
 psycopg2-binary
 psycopg[binary]
+psycopg[binary]
+psycopg2-binary
