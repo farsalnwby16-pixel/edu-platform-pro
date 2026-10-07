@@ -4,6 +4,7 @@ Flask-Login
 Flask-WTF
 WTForms
 psycopg2-binary
+psycopg
 yt-dlp
 gunicorn
 requests
