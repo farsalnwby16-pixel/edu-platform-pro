@@ -97,7 +97,16 @@
                 </div>
 
                 <!-- قسم القصص التفاعلية -->
-                <div class="cat-title" onclick="toggleCat('cat5')">📖 القصص التفاعلية (Stories) <span>▼</span></div>
+                <div class="cat-title" onclick="toggleCat('cat5')">📖 القصص التفاعلية (Stories)</div>
+<div style="display: flex; gap: 4px; flex-wrap: wrap; padding: 8px; background: #0f172a; border-radius: 6px;">
+    <a href="/?cat=Stories&level=A1" style="background:#334155; color:#fff; padding:6px 12px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:bold;">A1</a>
+    <a href="/?cat=Stories&level=A2" style="background:#334155; color:#fff; padding:6px 12px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:bold;">A2</a>
+    <a href="/?cat=Stories&level=B1" style="background:#334155; color:#fff; padding:6px 12px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:bold;">B1</a>
+    <a href="/?cat=Stories&level=B2" style="background:#334155; color:#fff; padding:6px 12px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:bold;">B2</a>
+    <a href="/?cat=Stories&level=C1" style="background:#334155; color:#fff; padding:6px 12px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:bold;">C1</a>
+    <a href="/?cat=Stories&level=C2" style="background:#334155; color:#fff; padding:6px 12px; border-radius:4px; text-decoration:none; font-size:12px; font-weight:bold;">C2</a>
+</div>
+<div style="display:none;' <span>▼</span></div>
                 <div class="cat-panel" id="cat5" style="display:none;">
                     {% for l in ['A1','A2','B1','B2','C1','C2'] %}
                         <a href="/?cat=Stories&level={{l}}" class="level-btn {% if current_cat=='Stories' and current_level==l %}active{% endif %}">{{l}}</a>
