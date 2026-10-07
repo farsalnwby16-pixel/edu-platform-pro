@@ -1,5 +1,10 @@
 Flask
 Flask-SQLAlchemy
-psycopg[binary]
+Flask-Login
+Flask-WTF
+WTForms
 psycopg2-binary
+yt-dlp
 gunicorn
+requests
+python-dotenv

@@ -11,15 +11,15 @@ app.secret_key = 'lingo_go_super_secret_key_2026'
 db_url = os.environ.get('DATABASE_URL', 'sqlite:///lingo_go.db')
 if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql+pg8000://", 1)
-elif db_url.startswith("postgresql://") and "+pg8000" not in db_url:
-    db_url = db_url.replace("postgresql://", "postgresql+pg8000://", 1)
+elif db_url.startswith("postgresql+psycopg2://") and "+pg8000" not in db_url:
+    db_url = db_url.replace("postgresql+psycopg2://", "postgresql+pg8000://", 1)
 
 import os
-db_url = os.environ.get('DATABASE_URL', 'postgresql://neondb_owner:npg_ZECSXyova0b9@ep-fragrant-firefly-zaojv26y-pooler.c-2.eu-west-2.aws.neon.tech/neondb?sslmode=require')
+db_url = os.environ.get('DATABASE_URL', 'postgresql+psycopg2://neondb_owner:npg_ZECSXyova0b9@ep-fragrant-firefly-zaojv26y-pooler.c-2.eu-west-2.aws.neon.tech/neondb?sslmode=require')
 if db_url.startswith('postgres://'):
-    db_url = db_url.replace('postgres://', 'postgresql://', 1)
+    db_url = db_url.replace('postgres://', 'postgresql+psycopg2://', 1)
 elif db_url.startswith('Postgresql://'):
-    db_url = db_url.replace('Postgresql://', 'postgresql://', 1)
+    db_url = db_url.replace('Postgresql://', 'postgresql+psycopg2://', 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
