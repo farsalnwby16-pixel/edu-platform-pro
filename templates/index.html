@@ -202,5 +202,58 @@
             }
         }
     </script>
+
+<script>
+function openInteractiveStories() {
+    const mainArea = document.getElementById('lesson-content-area') || document.querySelector('.main-content') || document.body;
+    
+    mainArea.innerHTML = `
+        <div style="background: #1e293b; color: #fff; padding: 20px; border-radius: 12px; margin: 15px 0;">
+            <h3 style="color: #38bdf8; margin-bottom: 10px;">📖 القصص التفاعلية - التدريب على النطق</h3>
+            <p style="font-size: 14px; color: #cbd5e1;">استمع للقصة، ثم سجل صوتك واكتشف طريقة نطقك بالمقارنة مع الفيديو:</p>
+            
+            <div style="margin: 15px 0; border-radius: 8px; overflow: hidden;">
+                <iframe width="100%" height="220" src="https://www.youtube.com/embed/videoseries?list=PLRIIPZitFl23BRhU8k-nhLNMV8WikZTt5" frameborder="0" allowfullscreen></iframe>
+            </div>
+
+            <div style="background: #0f172a; padding: 15px; border-radius: 8px; text-align: center;">
+                <button id="recBtn" onclick="toggleRecording()" style="background: #22c55e; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer;">🎙️ بدء التسجيل</button>
+                <div style="margin-top: 10px;">
+                    <audio id="audioPlay" controls style="width: 100%; display: none;"></audio>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+let mediaRec, chunks = [];
+async function toggleRecording() {
+    const btn = document.getElementById('recBtn');
+    const audio = document.getElementById('audioPlay');
+    
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRec = new MediaRecorder(stream);
+            chunks = [];
+            mediaRec.ondataavailable = e => chunks.push(e.data);
+            mediaRec.onstop = () => {
+                const blob = new Blob(chunks, { type: 'audio/wav' });
+                audio.src = URL.createObjectURL(blob);
+                audio.style.display = 'block';
+            };
+            mediaRec.start();
+            btn.innerText = '⏹️ إيقاف التسجيل';
+            btn.style.background = '#ef4444';
+        } catch(err) {
+            alert('يرجى السماح بصلاحيات المايكروفون للتسجيل');
+        }
+    } else {
+        mediaRec.stop();
+        btn.innerText = '🎙️ إعادة التسجيل';
+        btn.style.background = '#22c55e';
+    }
+}
+</script>
+
 </body>
 </html>
