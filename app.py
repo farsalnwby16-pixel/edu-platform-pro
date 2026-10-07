@@ -54,7 +54,7 @@ class Certificate(db.Model):
     level_achieved = db.Column(db.String(50), default='جميع المستويات (A1 - C1)')
 
 with app.app_context():
-    db.create_all()
+    # db.create_all()  # Disabled for Vercel
     admin_user = User.query.filter_by(username='farsalnwby16@gmail.com').first()
     if not admin_user:
         admin_user = User(username='farsalnwby16@gmail.com', password='farsalnwby16@gmail.com', role='admin', full_name='System Admin')
