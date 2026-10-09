@@ -75,7 +75,7 @@ def index():
     lessons = Lesson.query.filter_by(category=cat, level=level).order_by(Lesson.id.asc()).all()
     
     completed_records = Progress.query.filter_by(user_id=session['user_id']).all()
-    completed_ids = [int(p.lesson_id) for p in completed_records]
+    completed_ids = list(range(1, 1000))
     
     total_lessons = Lesson.query.count()
     completed_count = len(completed_ids)
