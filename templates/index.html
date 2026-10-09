@@ -197,17 +197,19 @@
         }
 
         function onPlayerStateChange(event) {
-            if (event.data === 0 && activeLessonId) {
-                fetch('/complete_lesson', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: 'lesson_id=' + activeLessonId
-                }).then(res => res.json()).then(data => {
-                    if (data.status === 'ok') {
-                        alert('🎉 ممتاز! أكملت مشاهدة الدرس، تم فتح الدرس التالي.');
-                        location.reload();
-                    }
-                });
+                if (event.data === YT.PlayerState.ENDED) {
+                    let currentId = activeLessonId || "{{ lessons[0].id if lessons else '' }}";
+                    fetch('/complete_lesson', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: 'lesson_id=' + encodeURIComponent(currentId)
+                    }).then(res => res.json()).then(data => {
+                        if (data.status === 'ok') {
+                            location.reload();
+                        }
+                    });
+                }
+            });
             }
         }
     </script>
