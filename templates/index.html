@@ -197,8 +197,19 @@
         }
 
         function onPlayerStateChange(event) {
-                if (event.data === YT.PlayerState.ENDED) {
-                    let currentId = activeLessonId || "{{ lessons[0].id if lessons else '' }}";
+    if (event.data === YT.PlayerState.ENDED) {
+        let currentId = activeLessonId || "{{ lessons[0].id if lessons else '' }}";
+        fetch('/complete_lesson', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'lesson_id=' + encodeURIComponent(currentId)
+        }).then(res => res.json()).then(data => {
+            if (data.status === 'ok') {
+                location.reload();
+            }
+        });
+    }
+}";
                     fetch('/complete_lesson', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
