@@ -142,11 +142,14 @@
             <div class="player-container">
                 <iframe id="yt-player" src="{{ lessons[0].url }}?enablejsapi=1" allowfullscreen></iframe>
             </div>
-            <h3 style="margin-bottom: 15px; color: #d4af37;" id="current-title">{{ lessons[0].title }}</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                <h3 style="color: #d4af37; margin: 0;" id="current-title">{{ lessons[0].title }}</h3>
+                <button id="next-btn" onclick="playNextLesson()" style="background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">الدرس التالي ⏭️</button>
+            </div>
 
             <h4 style="margin-bottom: 10px; color: #94a3b8;">قائمة دروس ({{ current_cat }} - {{ current_level }}):</h4>
             {% for lesson in lessons %}
-                {% set is_unlocked = loop.first or (lessons[loop.index0 - 1].id|int in completed_ids) %}
+                {% set is_unlocked = True %}
                 <div class="lesson-card {% if loop.first %}active{% endif %}" style="opacity: {% if is_unlocked %}1{% else %}0.5{% endif %};">
                     <div>
                         <div style="font-size: 13px; font-weight: bold;">{{ loop.index }}. {{ lesson.title }}</div>
@@ -181,10 +184,24 @@
             document.getElementById(id).classList.toggle('open');
         }
 
+        const lessonsData = {{ lessons | tojson }};
+        let currentIndex = 0;
+
         function playLesson(url, title, id) {
             activeLessonId = id;
-            document.getElementById('yt-player').src = url + "?enablejsapi=1&autoplay=1";
+            document.getElementById('yt-player').src = url + '?enablejsapi=1&autoplay=1';
             document.getElementById('current-title').innerText = title;
+            if (Array.isArray(lessonsData)) {
+                currentIndex = lessonsData.findIndex(l => String(l.id) === String(id));
+            }
+        }
+
+        function playNextLesson() {
+            if (Array.isArray(lessonsData) && lessonsData.length > 0) {
+                let nextIdx = (currentIndex + 1) % lessonsData.length;
+                let nextLesson = lessonsData[nextIdx];
+                playLesson(nextLesson.url, nextLesson.title, nextLesson.id);
+            }
         }
 
         let player;
