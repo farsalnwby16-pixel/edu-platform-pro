@@ -149,19 +149,13 @@
 
             <h4 style="margin-bottom: 10px; color: #94a3b8;">قائمة دروس ({{ current_cat }} - {{ current_level }}):</h4>
             {% for lesson in lessons %}
-                {% set is_unlocked = True %}
-                <div class="lesson-card {% if loop.first %}active{% endif %}" style="opacity: {% if is_unlocked %}1{% else %}0.5{% endif %};">
+                
+                <div class="lesson-card {% if loop.first %}active{% endif %}" >
                     <div>
                         <div style="font-size: 13px; font-weight: bold;">{{ loop.index }}. {{ lesson.title }}</div>
                     </div>
                     <div>
-                        {% if lesson.id|int in completed_ids %}
-                            <span class="badge-status status-done">✔ مكتمل</span>
-                        {% elif is_unlocked %}
-                            <button onclick="playLesson('{{ lesson.url }}', '{{ lesson.title }}', '{{ lesson.id }}')" style="background:#3b82f6; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:11px;">تشغيل</button>
-                        {% else %}
-                            <span class="badge-status status-lock">🔒 مغلق</span>
-                        {% endif %}
+                        <button onclick="playLesson('{{ lesson.url }}', '{{ lesson.title }}', '{{ lesson.id }}')" style="background:#3b82f6; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px;">▶ تشغيل</button>
                     </div>
                 </div>
             {% endfor %}
