@@ -3,12 +3,10 @@ import uuid
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
 from flask_sqlalchemy import SQLAlchemy
-import yt_dlp
 
 app = Flask(__name__)
 app.secret_key = 'lingo_go_super_secret_key_2026'
 
-# رابط قاعدة بيانات Neon PostgreSQL الدائمة بالاتصال الآمن
 db_url = 'postgresql+psycopg2://neondb_owner:npg_ZECSXyova0b9@ep-fragrant-firefly-zaojv26y-pooler.c-2.eu-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = db_url
@@ -16,7 +14,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# 1. جدول المستخدمين والحسابات الدائمة
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -24,7 +21,6 @@ class User(db.Model):
     role = db.Column(db.String(20), default='student')
     full_name = db.Column(db.String(120), default='')
 
-# 2. جدول الدروس لكافة الأقسام الستة ومستوياتها (A1 إلى C2)
 class Lesson(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
@@ -32,14 +28,12 @@ class Lesson(db.Model):
     category = db.Column(db.String(50), nullable=False)
     level = db.Column(db.String(10), nullable=False)
 
-# 3. جدول تقدم الطلاب الدائم
 class LessonProgress(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, nullable=False)
     lesson_id = db.Column(db.Integer, nullable=False)
     completed = db.Column(db.Boolean, default=True)
 
-# 4. جدول الشهادات الموثقة والدائمة
 class Certificate(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cert_code = db.Column(db.String(50), unique=True, nullable=False)
@@ -50,33 +44,55 @@ class Certificate(db.Model):
 
 with app.app_context():
     db.create_all()
-    # تهيئة الدروس الأساسية لجميع الأقسام الستة (بما فيها القصص التفاعلية Stories والبودكاست المنظفة)
     if Lesson.query.count() == 0:
         default_lessons = [
             # Lessons
             Lesson(title="1. Introduction to English Basics", url="https://www.youtube.com/embed/kJQP7kiw5Fk", category="Lessons", level="A1"),
+            Lesson(title="2. Simple Sentence Structure", url="https://www.youtube.com/embed/zSWdZVtXT7E", category="Lessons", level="A2"),
+            Lesson(title="1. Intermediate Grammar & Tenses", url="https://www.youtube.com/embed/X5P5655gghY", category="Lessons", level="B1"),
+            Lesson(title="2. Complex Sentence Patterns", url="https://www.youtube.com/embed/w7vK_u5Zg_o", category="Lessons", level="B2"),
             Lesson(title="1. Advanced Grammar Structures", url="https://www.youtube.com/embed/8X2k_ic0PP4", category="Lessons", level="C1"),
             Lesson(title="1. Mastery of Idiomatic Expressions", url="https://www.youtube.com/embed/5qap5aO4i9A", category="Lessons", level="C2"),
             
             # Listening
             Lesson(title="1. Daily English Listening Practice", url="https://www.youtube.com/embed/w7vK_u5Zg_o", category="Listening", level="A1"),
+            Lesson(title="2. Everyday Conversations", url="https://www.youtube.com/embed/kJQP7kiw5Fk", category="Listening", level="A2"),
+            Lesson(title="1. Intermediate Audio Clips", url="https://www.youtube.com/embed/zSWdZVtXT7E", category="Listening", level="B1"),
+            Lesson(title="1. News & Talk Shows Listening", url="https://www.youtube.com/embed/8X2k_ic0PP4", category="Listening", level="B2"),
+            Lesson(title="1. Academic Lectures Listening", url="https://www.youtube.com/embed/5qap5aO4i9A", category="Listening", level="C1"),
             Lesson(title="1. Advanced Native Speed Listening", url="https://www.youtube.com/embed/R8_Zs5s21c4", category="Listening", level="C2"),
             
             # Accent
             Lesson(title="1. American Accent Foundations", url="https://www.youtube.com/embed/hS03xMvQ_Zs", category="Accent", level="A1"),
+            Lesson(title="2. Vowels and Consonants Sound", url="https://www.youtube.com/embed/kJQP7kiw5Fk", category="Accent", level="A2"),
+            Lesson(title="1. Intonation & Stress Patterns", url="https://www.youtube.com/embed/zSWdZVtXT7E", category="Accent", level="B1"),
+            Lesson(title="1. Connected Speech & Linking", url="https://www.youtube.com/embed/w7vK_u5Zg_o", category="Accent", level="B2"),
+            Lesson(title="1. Advanced Accent Refinement", url="https://www.youtube.com/embed/8X2k_ic0PP4", category="Accent", level="C1"),
             Lesson(title="1. Native Pronunciation & Reductions", url="https://www.youtube.com/embed/V9vjXg6w3x0", category="Accent", level="C2"),
 
             # Shadowing
             Lesson(title="1. Basic Shadowing Technique", url="https://www.youtube.com/embed/X5P5655gghY", category="Shadowing", level="A1"),
+            Lesson(title="2. Short Sentences Shadowing", url="https://www.youtube.com/embed/kJQP7kiw5Fk", category="Shadowing", level="A2"),
+            Lesson(title="1. Medium Pace Shadowing", url="https://www.youtube.com/embed/zSWdZVtXT7E", category="Shadowing", level="B1"),
+            Lesson(title="1. Fluent Speech Shadowing", url="https://www.youtube.com/embed/w7vK_u5Zg_o", category="Shadowing", level="B2"),
+            Lesson(title="1. Advanced Speed Shadowing", url="https://www.youtube.com/embed/8X2k_ic0PP4", category="Shadowing", level="C1"),
             Lesson(title="1. Expert Speed Shadowing Practice", url="https://www.youtube.com/embed/5qap5aO4i9A", category="Shadowing", level="C2"),
 
-            # Podcast (تم تنظيفه بالكامل ليكون مستقلاً تماماً وبدون تكرار)
+            # Podcast
             Lesson(title="1. English Podcast for Beginners", url="https://www.youtube.com/embed/w7vK_u5Zg_o", category="Podcast", level="A1"),
+            Lesson(title="2. Casual Daily Chats Podcast", url="https://www.youtube.com/embed/kJQP7kiw5Fk", category="Podcast", level="A2"),
+            Lesson(title="1. Intermediate Storytelling Podcast", url="https://www.youtube.com/embed/zSWdZVtXT7E", category="Podcast", level="B1"),
+            Lesson(title="1. Culture & Society Discussion", url="https://www.youtube.com/embed/w7vK_u5Zg_o", category="Podcast", level="B2"),
+            Lesson(title="1. Expert Insights Podcast", url="https://www.youtube.com/embed/8X2k_ic0PP4", category="Podcast", level="C1"),
             Lesson(title="1. C2 Advanced Philosophical English Podcast", url="https://www.youtube.com/embed/8X2k_ic0PP4", category="Podcast", level="C2"),
             Lesson(title="2. C2 Business & Academic Deep Talk", url="https://www.youtube.com/embed/R8_Zs5s21c4", category="Podcast", level="C2"),
 
-            # Stories (القصص التفاعلية الجديدة كلياً)
+            # Stories (القصص التفاعلية)
             Lesson(title="1. Easy Interactive Story: The Lost Key", url="https://www.youtube.com/embed/kJQP7kiw5Fk", category="Stories", level="A1"),
+            Lesson(title="2. A Walk in the Park Story", url="https://www.youtube.com/embed/zSWdZVtXT7E", category="Stories", level="A2"),
+            Lesson(title="1. The Mystery Box Story", url="https://www.youtube.com/embed/X5P5655gghY", category="Stories", level="B1"),
+            Lesson(title="1. Journey to the Mountains", url="https://www.youtube.com/embed/w7vK_u5Zg_o", category="Stories", level="B2"),
+            Lesson(title="1. Classic Fiction Adaptation", url="https://www.youtube.com/embed/8X2k_ic0PP4", category="Stories", level="C1"),
             Lesson(title="1. Advanced C2 Literary Story Analysis", url="https://www.youtube.com/embed/8X2k_ic0PP4", category="Stories", level="C2")
         ]
         db.session.bulk_save_objects(default_lessons)

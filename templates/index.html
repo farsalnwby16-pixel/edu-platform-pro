@@ -8,7 +8,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; pointer-events: auto !important; }
         body { background: #080c14; color: #fff; display: flex; flex-direction: column; min-height: 100vh; }
 
-        .header { background: #0f172a; border-bottom: 1px solid #1e293b; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; }
+        .header { background: #0f172a; border-bottom: 1px solid #1e293b; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; width: 100%; z-index: 100; }
         .menu-btn { background: #1e293b; border: 1px solid #334155; color: #fff; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 16px; }
 
         .sidebar-overlay { position: fixed; top: 0; right: 0; bottom: 0; left: 0; background: rgba(0,0,0,0.7); display: none; z-index: 999; }
@@ -20,7 +20,6 @@
         .sb-title { color: #f59e0b; font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 8px; }
         .sb-close { background: #1e293b; border: 1px solid #334155; color: #fff; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; }
 
-        /* القائمة الجانبية الوحيدة للأقسام والمستويات */
         .cat-box { margin-bottom: 10px; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; overflow: hidden; }
         .cat-title { padding: 12px; color: #f59e0b; cursor: pointer; font-size: 14px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: #111827; }
         .cat-title:hover { background: #1f2937; }
@@ -34,7 +33,6 @@
 
         .content { padding: 15px; flex: 1; display: flex; flex-direction: column; gap: 12px; }
         
-        /* شريط التقدم فوق الفيديو مباشرة */
         .main-progress-box { background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 12px 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .main-progress-header { display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 8px; font-weight: 600; }
         .main-progress-bg { width: 100%; background: #1e293b; height: 9px; border-radius: 5px; overflow: hidden; }
@@ -43,7 +41,6 @@
         .video-container { position: relative; width: 100%; padding-bottom: 56.25%; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
 
-        /* أزرار التنقل: التالي على اليمين والسابق على اليسار */
         .nav-buttons { display: flex; justify-content: space-between; gap: 10px; margin: 2px 0; }
         .nav-btn { background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; font-size: 14px; flex: 1; box-shadow: 0 4px 6px rgba(0,0,0,0.2); text-align: center; }
         .nav-btn.prev { background: #3b82f6; }
@@ -64,12 +61,13 @@
 </head>
 <body>
 
+    <!-- رأس واحد نظيف غير مكرر -->
     <div class="header">
         <button class="menu-btn" onclick="toggleSidebar()">☰ القائمة</button>
         <h2 style="font-size: 18px; color: #3b82f6;">LINGO GO ACADEMY</h2>
     </div>
 
-    <!-- القائمة الجانبية الوحيدة المعتمدة -->
+    <!-- القائمة الجانبية الوحيدة للأقسام الستة -->
     <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
     <div class="sidebar" id="sidebar">
         <div class="sb-header">
@@ -157,9 +155,24 @@
                     <a href="/?cat=Podcast&level=C2" class="level-link">مستوى C2</a>
                 </div>
             </div>
+
+            <!-- 6. Stories (القصص التفاعلية) -->
+            <div class="cat-box" id="cat-Stories">
+                <div class="cat-title" onclick="toggleCat('cat-Stories')">
+                    <span>Stories 📁</span>
+                    <span>▼</span>
+                </div>
+                <div class="levels-list">
+                    <a href="/?cat=Stories&level=A1" class="level-link">مستوى A1</a>
+                    <a href="/?cat=Stories&level=A2" class="level-link">مستوى A2</a>
+                    <a href="/?cat=Stories&level=B1" class="level-link">مستوى B1</a>
+                    <a href="/?cat=Stories&level=B2" class="level-link">مستوى B2</a>
+                    <a href="/?cat=Stories&level=C1" class="level-link">مستوى C1</a>
+                    <a href="/?cat=Stories&level=C2" class="level-link">مستوى C2</a>
+                </div>
+            </div>
         </div>
 
-        <!-- بطاقة الشهادة (مقفلة حتى 100%) -->
         <div class="cert-card-sidebar {% if progress_pct >= 100 %}unlocked{% endif %}" id="cert-sidebar-box">
             {% if progress_pct >= 100 %}
                 <div style="font-size: 28px; margin-bottom: 5px;">🔓</div>
@@ -191,7 +204,7 @@
 
         <h3 id="current-title" style="font-size: 16px; color: #f8fafc; margin-top: 2px;">{{ lessons[0].title if lessons else 'اختر درساً للبدء' }}</h3>
 
-        <!-- أزرار التنقل: التالي على اليمين والسابق على اليسار -->
+        <!-- أزرار التنقل -->
         <div class="nav-buttons">
             <button class="nav-btn" onclick="playNextLesson()">الدرس التالي ⏩</button>
             <button class="nav-btn prev" onclick="playPrevLesson()">⏪ الدرس السابق</button>
