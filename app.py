@@ -7,6 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 app.secret_key = 'lingo_go_super_secret_key_2026'
 
+# رابط قاعدة بيانات Neon PostgreSQL الدائمة بالاتصال الآمن
 db_url = 'postgresql+psycopg2://neondb_owner:npg_ZECSXyova0b9@ep-fragrant-firefly-zaojv26y-pooler.c-2.eu-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = db_url
@@ -44,6 +45,7 @@ class Certificate(db.Model):
 
 with app.app_context():
     db.create_all()
+    # تهيئة الدروس الأساسية (بدون البودكاست وبوجود القصص التفاعلية Stories من A1 لـ C2)
     if Lesson.query.count() == 0:
         default_lessons = [
             # Lessons
@@ -78,22 +80,13 @@ with app.app_context():
             Lesson(title="1. Advanced Speed Shadowing", url="https://www.youtube.com/embed/8X2k_ic0PP4", category="Shadowing", level="C1"),
             Lesson(title="1. Expert Speed Shadowing Practice", url="https://www.youtube.com/embed/5qap5aO4i9A", category="Shadowing", level="C2"),
 
-            # Podcast
-            Lesson(title="1. English Podcast for Beginners", url="https://www.youtube.com/embed/w7vK_u5Zg_o", category="Podcast", level="A1"),
-            Lesson(title="2. Casual Daily Chats Podcast", url="https://www.youtube.com/embed/kJQP7kiw5Fk", category="Podcast", level="A2"),
-            Lesson(title="1. Intermediate Storytelling Podcast", url="https://www.youtube.com/embed/zSWdZVtXT7E", category="Podcast", level="B1"),
-            Lesson(title="1. Culture & Society Discussion", url="https://www.youtube.com/embed/w7vK_u5Zg_o", category="Podcast", level="B2"),
-            Lesson(title="1. Expert Insights Podcast", url="https://www.youtube.com/embed/8X2k_ic0PP4", category="Podcast", level="C1"),
-            Lesson(title="1. C2 Advanced Philosophical English Podcast", url="https://www.youtube.com/embed/8X2k_ic0PP4", category="Podcast", level="C2"),
-            Lesson(title="2. C2 Business & Academic Deep Talk", url="https://www.youtube.com/embed/R8_Zs5s21c4", category="Podcast", level="C2"),
-
-            # Stories (القصص التفاعلية)
+            # Stories (القصص التفاعلية - من A1 لـ C2)
             Lesson(title="1. Easy Interactive Story: The Lost Key", url="https://www.youtube.com/embed/kJQP7kiw5Fk", category="Stories", level="A1"),
             Lesson(title="2. A Walk in the Park Story", url="https://www.youtube.com/embed/zSWdZVtXT7E", category="Stories", level="A2"),
             Lesson(title="1. The Mystery Box Story", url="https://www.youtube.com/embed/X5P5655gghY", category="Stories", level="B1"),
             Lesson(title="1. Journey to the Mountains", url="https://www.youtube.com/embed/w7vK_u5Zg_o", category="Stories", level="B2"),
             Lesson(title="1. Classic Fiction Adaptation", url="https://www.youtube.com/embed/8X2k_ic0PP4", category="Stories", level="C1"),
-            Lesson(title="1. Advanced C2 Literary Story Analysis", url="https://www.youtube.com/embed/8X2k_ic0PP4", category="Stories", level="C2")
+            Lesson(title="1. Advanced C2 Literary Story Analysis", url="https://www.youtube.com/embed/R8_Zs5s21c4", category="Stories", level="C2")
         ]
         db.session.bulk_save_objects(default_lessons)
         db.session.commit()
