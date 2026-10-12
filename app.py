@@ -24,7 +24,7 @@ class User(db.Model):
     role = db.Column(db.String(20), default='student')
     full_name = db.Column(db.String(120), default='')
 
-# 2. جدول الدروس لكافة الأقسام والمستويات (A1 إلى C2)
+# 2. جدول الدروس لكافة الأقسام الستة ومستوياتها (A1 إلى C2)
 class Lesson(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
@@ -39,7 +39,7 @@ class LessonProgress(db.Model):
     lesson_id = db.Column(db.Integer, nullable=False)
     completed = db.Column(db.Boolean, default=True)
 
-# 4. جدول الشهادات الموثقة والدائمة (للطلاب والأدمن)
+# 4. جدول الشهادات الموثقة والدائمة
 class Certificate(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cert_code = db.Column(db.String(50), unique=True, nullable=False)
@@ -50,12 +50,11 @@ class Certificate(db.Model):
 
 with app.app_context():
     db.create_all()
-    # تهيئة الدروس الأساسية غير المكررة لكل الأقسام والمستويات إذا كانت قاعدة البيانات فارغة
+    # تهيئة الدروس الأساسية لجميع الأقسام الستة (بما فيها القصص التفاعلية Stories والبودكاست المنظفة)
     if Lesson.query.count() == 0:
         default_lessons = [
             # Lessons
             Lesson(title="1. Introduction to English Basics", url="https://www.youtube.com/embed/kJQP7kiw5Fk", category="Lessons", level="A1"),
-            Lesson(title="2. Simple Sentence Structure", url="https://www.youtube.com/embed/zSWdZVtXT7E", category="Lessons", level="A2"),
             Lesson(title="1. Advanced Grammar Structures", url="https://www.youtube.com/embed/8X2k_ic0PP4", category="Lessons", level="C1"),
             Lesson(title="1. Mastery of Idiomatic Expressions", url="https://www.youtube.com/embed/5qap5aO4i9A", category="Lessons", level="C2"),
             
@@ -71,10 +70,14 @@ with app.app_context():
             Lesson(title="1. Basic Shadowing Technique", url="https://www.youtube.com/embed/X5P5655gghY", category="Shadowing", level="A1"),
             Lesson(title="1. Expert Speed Shadowing Practice", url="https://www.youtube.com/embed/5qap5aO4i9A", category="Shadowing", level="C2"),
 
-            # Podcast
+            # Podcast (تم تنظيفه بالكامل ليكون مستقلاً تماماً وبدون تكرار)
             Lesson(title="1. English Podcast for Beginners", url="https://www.youtube.com/embed/w7vK_u5Zg_o", category="Podcast", level="A1"),
             Lesson(title="1. C2 Advanced Philosophical English Podcast", url="https://www.youtube.com/embed/8X2k_ic0PP4", category="Podcast", level="C2"),
-            Lesson(title="2. C2 Business & Academic Deep Talk", url="https://www.youtube.com/embed/R8_Zs5s21c4", category="Podcast", level="C2")
+            Lesson(title="2. C2 Business & Academic Deep Talk", url="https://www.youtube.com/embed/R8_Zs5s21c4", category="Podcast", level="C2"),
+
+            # Stories (القصص التفاعلية الجديدة كلياً)
+            Lesson(title="1. Easy Interactive Story: The Lost Key", url="https://www.youtube.com/embed/kJQP7kiw5Fk", category="Stories", level="A1"),
+            Lesson(title="1. Advanced C2 Literary Story Analysis", url="https://www.youtube.com/embed/8X2k_ic0PP4", category="Stories", level="C2")
         ]
         db.session.bulk_save_objects(default_lessons)
         db.session.commit()
@@ -239,7 +242,6 @@ def admin_preview_certificate():
     cert_code = f"CERT-ADM-{uuid.uuid4().hex[:6].upper()}"
     issue_date = datetime.now().strftime("%B %d, %Y")
 
-    # حفظ شهادة الأدمن في قاعدة البيانات الدائمة لتبقى مسجلة ولا تتمسح
     cert = Certificate(
         cert_code=cert_code,
         user_id=session['user_id'],
