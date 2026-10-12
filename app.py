@@ -8,24 +8,15 @@ import yt_dlp
 app = Flask(__name__)
 app.secret_key = 'lingo_go_super_secret_key_2026'
 
-db_url = os.environ.get('DATABASE_URL', 'sqlite:///lingo_go.db')
-if db_url.startswith("postgres://"):
-    db_url = db_url.replace("postgres://", "postgresql+pg8000://", 1)
-elif db_url.startswith("postgresql+psycopg2://") and "+pg8000" not in db_url:
-    db_url = db_url.replace("postgresql+psycopg2://", "postgresql+pg8000://", 1)
-
-import os
-db_url = os.environ.get('DATABASE_URL', 'postgresql+psycopg2://neondb_owner:npg_ZECSXyova0b9@ep-fragrant-firefly-zaojv26y-pooler.c-2.eu-west-2.aws.neon.tech/neondb?sslmode=require')
-if db_url.startswith('postgres://'):
-    db_url = db_url.replace('postgres://', 'postgresql+psycopg2://', 1)
-elif db_url.startswith('Postgresql://'):
-    db_url = db_url.replace('Postgresql://', 'postgresql+psycopg2://', 1)
+# رابط قاعدة بيانات Neon PostgreSQL الدائمة بالاتصال الآمن
+db_url = 'postgresql+psycopg2://neondb_owner:npg_ZECSXyova0b9@ep-fragrant-firefly-zaojv26y-pooler.c-2.eu-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
+# 1. جدول المستخدمين والحسابات الدائمة
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -33,6 +24,7 @@ class User(db.Model):
     role = db.Column(db.String(20), default='student')
     full_name = db.Column(db.String(120), default='')
 
+# 2. جدول الدروس لكافة الأقسام والمستويات (A1 إلى C2)
 class Lesson(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
@@ -40,55 +32,79 @@ class Lesson(db.Model):
     category = db.Column(db.String(50), nullable=False)
     level = db.Column(db.String(10), nullable=False)
 
-class Progress(db.Model):
+# 3. جدول تقدم الطلاب الدائم
+class LessonProgress(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, nullable=False)
     lesson_id = db.Column(db.Integer, nullable=False)
+    completed = db.Column(db.Boolean, default=True)
 
+# 4. جدول الشهادات الموثقة والدائمة (للطلاب والأدمن)
 class Certificate(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cert_code = db.Column(db.String(50), unique=True, nullable=False)
     user_id = db.Column(db.Integer, nullable=False)
     student_name = db.Column(db.String(120), nullable=False)
     issue_date = db.Column(db.String(50), nullable=False)
-    level_achieved = db.Column(db.String(50), default='جميع المستويات (A1 - C1)')
+    level_achieved = db.Column(db.String(50), default='جميع المستويات (A1 - C2)')
 
 with app.app_context():
-    # db.create_all()  # Disabled for Vercel
-    admin_user = User.query.filter_by(username='farsalnwby16@gmail.com').first()
-    if not admin_user:
-        admin_user = User(username='farsalnwby16@gmail.com', password='farsalnwby16@gmail.com', role='admin', full_name='System Admin')
-        db.session.add(admin_user)
-    else:
-        admin_user.password = 'farsalnwby16@gmail.com'
-        admin_user.role = 'admin'
-    db.session.commit()
+    db.create_all()
+    # تهيئة الدروس الأساسية غير المكررة لكل الأقسام والمستويات إذا كانت قاعدة البيانات فارغة
+    if Lesson.query.count() == 0:
+        default_lessons = [
+            # Lessons
+            Lesson(title="1. Introduction to English Basics", url="https://www.youtube.com/embed/kJQP7kiw5Fk", category="Lessons", level="A1"),
+            Lesson(title="2. Simple Sentence Structure", url="https://www.youtube.com/embed/zSWdZVtXT7E", category="Lessons", level="A2"),
+            Lesson(title="1. Advanced Grammar Structures", url="https://www.youtube.com/embed/8X2k_ic0PP4", category="Lessons", level="C1"),
+            Lesson(title="1. Mastery of Idiomatic Expressions", url="https://www.youtube.com/embed/5qap5aO4i9A", category="Lessons", level="C2"),
+            
+            # Listening
+            Lesson(title="1. Daily English Listening Practice", url="https://www.youtube.com/embed/w7vK_u5Zg_o", category="Listening", level="A1"),
+            Lesson(title="1. Advanced Native Speed Listening", url="https://www.youtube.com/embed/R8_Zs5s21c4", category="Listening", level="C2"),
+            
+            # Accent
+            Lesson(title="1. American Accent Foundations", url="https://www.youtube.com/embed/hS03xMvQ_Zs", category="Accent", level="A1"),
+            Lesson(title="1. Native Pronunciation & Reductions", url="https://www.youtube.com/embed/V9vjXg6w3x0", category="Accent", level="C2"),
+
+            # Shadowing
+            Lesson(title="1. Basic Shadowing Technique", url="https://www.youtube.com/embed/X5P5655gghY", category="Shadowing", level="A1"),
+            Lesson(title="1. Expert Speed Shadowing Practice", url="https://www.youtube.com/embed/5qap5aO4i9A", category="Shadowing", level="C2"),
+
+            # Podcast
+            Lesson(title="1. English Podcast for Beginners", url="https://www.youtube.com/embed/w7vK_u5Zg_o", category="Podcast", level="A1"),
+            Lesson(title="1. C2 Advanced Philosophical English Podcast", url="https://www.youtube.com/embed/8X2k_ic0PP4", category="Podcast", level="C2"),
+            Lesson(title="2. C2 Business & Academic Deep Talk", url="https://www.youtube.com/embed/R8_Zs5s21c4", category="Podcast", level="C2")
+        ]
+        db.session.bulk_save_objects(default_lessons)
+        db.session.commit()
 
 @app.route('/')
 def index():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    
+
     cat = request.args.get('cat', 'Lessons')
     level = request.args.get('level', 'A1')
+
+    lessons_raw = Lesson.query.filter_by(category=cat, level=level).order_by(Lesson.id.asc()).all()
+    lessons = [{'id': l.id, 'title': l.title, 'url': l.url, 'category': l.category, 'level': l.level} for l in lessons_raw]
     
-    lessons = Lesson.query.filter_by(category=cat, level=level).order_by(Lesson.id.asc()).all()
-    
-    completed_records = Progress.query.filter_by(user_id=session['user_id']).all()
-    completed_ids = list(range(1, 1000))
-    
+    completed_lessons = [p.lesson_id for p in LessonProgress.query.filter_by(user_id=session.get('user_id')).all()] if 'user_id' in session else []
+
     total_lessons = Lesson.query.count()
-    completed_count = len(completed_ids)
+    completed_count = len(completed_lessons)
     progress_pct = int((completed_count / total_lessons * 100)) if total_lessons > 0 else 0
-    
+    if progress_pct > 100: progress_pct = 100
+
     user_data = User.query.get(session['user_id'])
     student_name = user_data.full_name if user_data and user_data.full_name else session['username']
 
     return render_template('index.html', 
-                           lessons=lessons, 
-                           completed_ids=completed_ids, 
+                           completed_lessons=completed_lessons,
+                           lessons=lessons,
                            progress_pct=progress_pct,
-                           current_cat=cat, 
+                           current_cat=cat,
                            current_level=level,
                            student_name=student_name)
 
@@ -113,14 +129,14 @@ def register():
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
         full_name = request.form.get('full_name', '').strip()
-        
+
         if User.query.filter_by(username=username).first():
             flash('اسم المستخدم مستخدم بالفعل')
         else:
             new_user = User(username=username, password=password, role='student', full_name=full_name)
             db.session.add(new_user)
             db.session.commit()
-            flash('تم إنشاء الحساب بنجاح، يمكنك تسجيل الدخول الآن')
+            flash('تم إنشاء الحساب وحفظه بنجاح، يمكنك تسجيل الدخول الآن')
             return redirect(url_for('login'))
     return render_template('register.html')
 
@@ -134,12 +150,15 @@ def complete_lesson():
     if 'user_id' not in session:
         return jsonify({'status': 'error'}), 401
     lesson_id = request.form.get('lesson_id')
+    user_id = session['user_id']
     if lesson_id:
-        existing = Progress.query.filter_by(user_id=session['user_id'], lesson_id=int(lesson_id)).first()
-        if not existing:
-            p = Progress(user_id=session['user_id'], lesson_id=int(lesson_id))
+        p = LessonProgress.query.filter_by(user_id=user_id, lesson_id=int(lesson_id)).first()
+        if not p:
+            p = LessonProgress(user_id=user_id, lesson_id=int(lesson_id), completed=True)
             db.session.add(p)
-            db.session.commit()
+        else:
+            p.completed = True
+        db.session.commit()
         return jsonify({'status': 'ok'})
     return jsonify({'status': 'invalid'})
 
@@ -161,7 +180,7 @@ def certificate():
         return redirect(url_for('login'))
     u = User.query.get(session['user_id'])
     student_name = u.full_name if u and u.full_name else u.username
-    
+
     cert = Certificate.query.filter_by(user_id=u.id).first()
     if not cert:
         cert_code = f"CERT-{uuid.uuid4().hex[:8].upper()}"
@@ -171,14 +190,14 @@ def certificate():
             user_id=u.id,
             student_name=student_name,
             issue_date=issue_date,
-            level_achieved='جميع المستويات (A1 - C1)'
+            level_achieved='جميع المستويات (A1 - C2)'
         )
         db.session.add(cert)
         db.session.commit()
     else:
         cert.student_name = student_name
         db.session.commit()
-        
+
     return render_template('certificate.html', student_name=cert.student_name, cert_id=cert.cert_code, issue_date=cert.issue_date)
 
 @app.route('/admin')
@@ -195,7 +214,7 @@ def admin_add_lesson():
     level = request.form.get('level', 'A1')
     title = request.form.get('title', '').strip()
     url = request.form.get('url', '').strip()
-    
+
     if 'watch?v=' in url:
         v_id = url.split('watch?v=')[1].split('&')[0]
         url = f"https://www.youtube.com/embed/{v_id}"
@@ -206,36 +225,7 @@ def admin_add_lesson():
     new_lesson = Lesson(title=title, url=url, category=category, level=level)
     db.session.add(new_lesson)
     db.session.commit()
-    flash('تمت إضافة الدرس بنجاح')
-    return redirect(url_for('admin'))
-
-@app.route('/admin/import_playlist', methods=['POST'])
-def admin_import_playlist():
-    if 'user_id' not in session or session.get('role') != 'admin':
-        return redirect(url_for('login'))
-    category = request.form.get('category', 'Lessons')
-    level = request.form.get('level', 'A1')
-    playlist_url = request.form.get('playlist_url', '').strip()
-    
-    if playlist_url:
-        ydl_opts = {'extract_flat': 'in_playlist', 'skip_download': True, 'quiet': True}
-        try:
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(playlist_url, download=False)
-                if 'entries' in info:
-                    for entry in info['entries']:
-                        if entry:
-                            v_id = entry.get('id')
-                            v_title = entry.get('title', 'Video Lesson')
-                            if v_id:
-                                embed_url = f"https://www.youtube.com/embed/{v_id}"
-                                l = Lesson(title=v_title, url=embed_url, category=category, level=level)
-                                db.session.add(l)
-            db.session.commit()
-            flash('تم استيراد قائمة التشغيل بنجاح')
-        except Exception as e:
-            flash(f'حدث خطأ أثناء الاستيراد: {e}')
-            
+    flash('تمت إضافة الدرس وحفظه في القاعدة الدائمة بنجاح')
     return redirect(url_for('admin'))
 
 @app.route('/admin/preview_certificate', methods=['POST'])
@@ -245,27 +235,26 @@ def admin_preview_certificate():
     student_name = request.form.get('preview_name', 'Student Name').strip()
     if not student_name:
         student_name = 'Student Name'
-        
+
     cert_code = f"CERT-ADM-{uuid.uuid4().hex[:6].upper()}"
     issue_date = datetime.now().strftime("%B %d, %Y")
-    
-    # حفظ الشهادة الصادرة من الأدمن في قاعدة البيانات فوراً
+
+    # حفظ شهادة الأدمن في قاعدة البيانات الدائمة لتبقى مسجلة ولا تتمسح
     cert = Certificate(
         cert_code=cert_code,
         user_id=session['user_id'],
         student_name=student_name,
         issue_date=issue_date,
-        level_achieved='جميع المستويات (A1 - C1)'
+        level_achieved='جميع المستويات (A1 - C2)'
     )
     db.session.add(cert)
     db.session.commit()
-    
+
     return render_template('certificate.html', student_name=cert.student_name, cert_id=cert.cert_code, issue_date=cert.issue_date)
 
 @app.route('/verify/<cert_id>')
 def verify_certificate(cert_id):
     cert = Certificate.query.filter_by(cert_code=cert_id.strip()).first()
-    
     if cert:
         return f"""
         <!DOCTYPE html>
@@ -277,45 +266,36 @@ def verify_certificate(cert_id):
             <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
             <style>
-                body {{ background: #0b0f19; color: #e2e8f0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }}
-                .verify-card {{ background: rgba(22, 31, 48, 0.9); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); backdrop-filter: blur(12px); max-width: 550px; width: 100%; padding: 35px; text-align: center; position: relative; overflow: hidden; }}
-                .verify-card::before {{ content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, #10b981, #3b82f6); }}
-                .badge-status {{ display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 8px 18px; border-radius: 30px; font-weight: 600; font-size: 0.95rem; margin-bottom: 20px; }}
-                .cert-title {{ font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 4px; }}
-                .academy-name {{ color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 25px; }}
-                .info-group {{ background: rgba(15, 23, 42, 0.6); border-radius: 12px; padding: 14px 18px; margin-bottom: 12px; text-align: right; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255, 255, 255, 0.05); }}
-                .info-label {{ color: #94a3b8; font-size: 0.88rem; margin: 0; }}
-                .info-value {{ color: #f8fafc; font-weight: 600; font-size: 0.98rem; margin: 0; }}
-                .seal-icon {{ font-size: 3.5rem; color: #10b981; margin-bottom: 15px; filter: drop-shadow(0 0 12px rgba(16,185,129,0.4)); }}
+                body {{ background: #0b0f19; color: #e2e8f0; font-family: Tahoma, sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }}
+                .verify-card {{ background: rgba(22, 31, 48, 0.95); border: 1px solid #10b981; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); max-width: 550px; width: 100%; padding: 35px; text-align: center; }}
+                .badge-status {{ display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 8px 18px; border-radius: 30px; font-weight: 600; margin-bottom: 20px; }}
+                .info-group {{ background: rgba(15, 23, 42, 0.8); border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; text-align: right; display: flex; justify-content: space-between; }}
             </style>
         </head>
         <body>
             <div class="verify-card">
-                <div class="seal-icon"><i class="fas fa-certificate"></i></div>
-                <div class="badge-status"><i class="fas fa-check-circle"></i> شهادة موثقة ورسمية</div>
-                <div class="cert-title">نظام التوثيق الأكاديمي المباشر</div>
-                <div class="academy-name">Lingo Go International Academy</div>
-                <hr style="border-color: rgba(255,255,255,0.1); margin: 20px 0;">
-                
+                <div style="font-size: 3.5rem; color: #10b981; margin-bottom: 15px;"><i class="fas fa-certificate"></i></div>
+                <div class="badge-status"><i class="fas fa-check-circle"></i> شهادة موثقة ورسمية ودائمة</div>
+                <h3 style="color: #fff; margin-bottom: 20px;">Lingo Go International Academy</h3>
                 <div class="info-group">
-                    <span class="info-label"><i class="fas fa-user-graduate text-primary me-2"></i> اسم الطالب:</span>
-                    <span class="info-value">{cert.student_name}</span>
+                    <span style="color: #94a3b8;">اسم الطالب:</span>
+                    <span style="color: #fff; font-weight: bold;">{cert.student_name}</span>
                 </div>
                 <div class="info-group">
-                    <span class="info-label"><i class="fas fa-barcode text-info me-2"></i> كود التوثيق (ID):</span>
-                    <span class="info-value" style="font-family: monospace; color: #3b82f6;">{cert.cert_code}</span>
+                    <span style="color: #94a3b8;">كود التوثيق (ID):</span>
+                    <span style="color: #3b82f6; font-family: monospace; font-weight: bold;">{cert.cert_code}</span>
                 </div>
                 <div class="info-group">
-                    <span class="info-label"><i class="fas fa-calendar-alt text-warning me-2"></i> تاريخ الحصول عليها:</span>
-                    <span class="info-value">{cert.issue_date}</span>
+                    <span style="color: #94a3b8;">تاريخ الإصدار:</span>
+                    <span style="color: #fff;">{cert.issue_date}</span>
                 </div>
                 <div class="info-group">
-                    <span class="info-label"><i class="fas fa-award text-success me-2"></i> المستوى المحقق:</span>
-                    <span class="info-value">{cert.level_achieved}</span>
+                    <span style="color: #94a3b8;">المستوى:</span>
+                    <span style="color: #10b981; font-weight: bold;">{cert.level_achieved}</span>
                 </div>
                 <div class="info-group">
-                    <span class="info-label"><i class="fas fa-shield-alt text-success me-2"></i> حالة السجل:</span>
-                    <span class="info-value" style="color: #10b981;">نشط ومسجل بالسجلات الرسمية</span>
+                    <span style="color: #94a3b8;">حالة السجل:</span>
+                    <span style="color: #10b981; font-weight: bold;">محفوظ بشكل دائم في قاعدة البيانات</span>
                 </div>
             </div>
         </body>
@@ -327,26 +307,17 @@ def verify_certificate(cert_id):
         <html lang="ar" dir="rtl">
         <head>
             <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>خطأ في التوثيق - Lingo Go Academy</title>
+            <title>خطأ في التوثيق</title>
             <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
             <style>
-                body {{ background: #0b0f19; color: #e2e8f0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }}
-                .verify-card {{ background: rgba(22, 31, 48, 0.9); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); backdrop-filter: blur(12px); max-width: 550px; width: 100%; padding: 35px; text-align: center; position: relative; overflow: hidden; }}
-                .verify-card::before {{ content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: #ef4444; }}
-                .badge-status {{ display: inline-flex; align-items: center; gap: 8px; background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 8px 18px; border-radius: 30px; font-weight: 600; font-size: 0.95rem; margin-bottom: 20px; }}
-                .cert-title {{ font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 10px; }}
-                .seal-icon {{ font-size: 3.5rem; color: #ef4444; margin-bottom: 15px; filter: drop-shadow(0 0 12px rgba(239,68,68,0.4)); }}
-                .error-msg {{ color: #94a3b8; font-size: 0.95rem; line-height: 1.6; margin-top: 15px; }}
+                body {{ background: #0b0f19; color: #fff; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: Tahoma, sans-serif; }}
+                .card-box {{ background: #161f30; padding: 40px; border-radius: 15px; border: 2px solid #ef4444; text-align: center; max-width: 500px; width: 100%; }}
             </style>
         </head>
         <body>
-            <div class="verify-card">
-                <div class="seal-icon"><i class="fas fa-times-circle"></i></div>
-                <div class="badge-status"><i class="fas fa-exclamation-triangle"></i> غير موثقة / كود غير موجود</div>
-                <div class="cert-title">شهادة غير صالحة أو غير مسجلة</div>
-                <p class="error-msg">كود التوثيق المرفق (<strong style="color: #ef4444;">{cert_id}</strong>) غير موجود في قاعدة بيانات الأكاديمية. هذه الشهادة تعتبر <span style="color: #ef4444; font-weight: bold;">غير رسمية أو مزورة</span>.</p>
+            <div class="card-box">
+                <h2 style="color: #ef4444; margin-bottom: 20px;">❌ شهادة غير صالحة أو غير مسجلة</h2>
+                <p style="color: #94a3b8;">كود التوثيق ({cert_id}) غير موجود في سجلات قاعدة البيانات الدائمة.</p>
             </div>
         </body>
         </html>
